@@ -8,7 +8,11 @@
 <meta name="description" content="폰 한 대로 둘이서 즐기는 대결 미니게임">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="쿵짝">
 <meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <!-- ⚠ 출시 전 반드시 교체: 아래 CDN 링크를 지우고 @font-face base64 임베드로 바꿀 것.
      오프라인/기내모드에서 글꼴이 깨진다. docs/출시체크리스트.md 1번 항목 참고. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -948,6 +952,14 @@ const COMING = [
 
   drawPips();
 })();
+
+/* 서비스워커 — 사파리에서 홈 화면에 추가했을 때 오프라인으로 돌게 한다.
+   Flutter WebView는 file:// 로 뜨므로 자동으로 건너뛴다. */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,17 @@
+{
+  "name": "쿵짝",
+  "short_name": "쿵짝",
+  "description": "폰 한 대로 둘이서 즐기는 대결 미니게임",
+  "lang": "ko",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F1F8",
+  "theme_color": "#F2F1F8",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
