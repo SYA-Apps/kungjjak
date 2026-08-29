@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# 편집기
+.vscode/
+.idea/
+
+# 빌드 산출물
+build/
+dist/
+*.apk
+*.aab
+
+# 서명 키 — 절대 커밋 금지
+*.jks
+*.keystore
+key.properties
+
+# 임시
+/tmp/
+*.log
