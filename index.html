@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>쿵짝</title>
+<meta name="theme-color" content="#F2F1F8">
+<meta name="description" content="폰 한 대로 둘이서 즐기는 대결 미니게임">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<!-- ⚠ 출시 전 반드시 교체: 아래 CDN 링크를 지우고 @font-face base64 임베드로 바꿀 것.
+     오프라인/기내모드에서 글꼴이 깨진다. docs/출시체크리스트.md 1번 항목 참고. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gothic+A1:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F1F8;
+  --ink:#2E2B3A;
+  --mute:#DCDAE8;
+  --a:#7FD1B9;
+  --b:#FF8FA3;
+  --go:#FFD166;
+  --display:'Jua','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;
+  --body:'Gothic A1','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none}
+body{
+  font-family:var(--body);
+  background:var(--bg);
+  color:var(--ink);
+  user-select:none;
+  touch-action:manipulation;
+}
+#app{height:100dvh;position:relative;overflow:hidden}
+
+/* ---------- 화면 전환 ---------- */
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+
+/* ---------- 메뉴 ---------- */
+#menu{padding:8vh 24px 24px;align-items:center;gap:32px;overflow-y:auto}
+.logo{font-family:var(--display);font-size:52px;letter-spacing:-2px}
+.logo small{display:block;font-family:var(--body);font-size:13px;font-weight:400;
+  letter-spacing:1px;opacity:.55;margin-top:6px}
+.gamelist{width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px}
+.gamecard{
+  display:flex;align-items:center;gap:16px;
+  background:#fff;border:none;border-radius:22px;padding:18px 20px;
+  font-family:var(--body);font-size:16px;color:var(--ink);text-align:left;
+  box-shadow:0 2px 0 var(--mute);cursor:pointer;
+  transition:transform .12s ease;
+}
+.gamecard:active{transform:translateY(2px);box-shadow:none}
+.gamecard b{font-family:var(--display);font-size:19px;font-weight:400;display:block}
+.gamecard span{font-size:13px;opacity:.6}
+.gamecard .chip{
+  flex:none;width:46px;height:46px;border-radius:16px;
+  display:grid;place-items:center;font-size:22px;
+}
+.gamecard.soon{opacity:.42;pointer-events:none}
+.hint{font-size:13px;opacity:.5;text-align:center;line-height:1.7;padding-bottom:20px}
+
+/* ---------- 대결 화면 ---------- */
+#arena{flex-direction:column}
+.half{
+  flex:1;position:relative;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;
+  background:var(--bg);transition:background .12s ease;
+}
+.half.top{transform:rotate(180deg)}
+.half[data-go="1"]{background:var(--go)}
+.divider{
+  height:3px;background:var(--mute);flex:none;position:relative;z-index:2;
+}
+.pips{display:flex;gap:7px}
+.pip{width:11px;height:11px;border-radius:50%;background:var(--mute);transition:background .2s}
+.half[data-p="A"] .pip.on{background:var(--a)}
+.half[data-p="B"] .pip.on{background:var(--b)}
+.caption{font-family:var(--display);font-size:20px;letter-spacing:-.5px;min-height:26px}
+.ms{font-size:13px;opacity:.55;min-height:18px;font-variant-numeric:tabular-nums}
+.face{width:132px;height:132px}
+.facewrap:empty,.panel:empty{display:none}
+
+/* 게임별 커스텀 슬롯 */
+.panel{display:flex;flex-direction:column;align-items:center;gap:24px}
+.word{font-family:var(--display);font-size:52px;letter-spacing:-2px;line-height:1}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.swatch{
+  width:58px;height:58px;border:none;border-radius:19px;
+  box-shadow:0 3px 0 rgba(0,0,0,.13);cursor:pointer;
+  transition:transform .1s ease;
+}
+.swatch:active{transform:translateY(3px);box-shadow:none}
+.swatch:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+/* ---------- 공용 판 레이아웃 (두 사람이 같은 판을 볼 때) ---------- */
+#board{display:none}
+#arena.shared #board{
+  flex:1;min-height:0;padding:12px;
+  border-top:3px solid var(--mute);border-bottom:3px solid var(--mute);
+}
+#arena.shared #board.grid12{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);gap:9px;
+}
+#arena.shared #board.duo{
+  display:flex;flex-direction:column;align-items:center;justify-content:space-around;
+}
+#arena.shared .divider{display:none}
+#arena.shared .half{flex:none;height:88px;gap:7px}
+#arena.shared .face{width:52px;height:52px}
+#arena.shared .caption{font-size:18px}
+#arena.shared .half[data-locked="1"]{opacity:.38}
+
+/* 원판 카드 — 그림 위치와 각도를 무작위로 흩어 어느 쪽에서 봐도 공평하게 */
+.dcard{
+  position:relative;width:min(80vw,33vh);height:min(80vw,33vh);
+  background:#fff;border-radius:50%;box-shadow:0 3px 0 var(--mute);
+}
+.sym{
+  position:absolute;left:var(--x);top:var(--y);
+  transform:translate(-50%,-50%) rotate(var(--r)) scale(var(--s));
+  width:9vmin;height:9vmin;
+  background:none;border:none;padding:0;cursor:pointer;
+}
+.sym svg{width:100%;height:100%;display:block}
+.chip-i{width:21px;height:21px;vertical-align:-5px}
+.sym:active{filter:brightness(.8)}
+.sym:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radius:8px}
+
+.card{
+  background:#fff;border:none;border-radius:16px;padding:8px;
+  box-shadow:0 2px 0 var(--mute);cursor:pointer;
+  display:grid;place-items:center;min-width:0;min-height:0;
+}
+.card svg{width:100%;height:100%;max-height:100%}
+.card.sel{box-shadow:0 0 0 4px var(--ink) inset}
+.card.good{box-shadow:0 0 0 5px #3FB477 inset}
+.card.bad{box-shadow:0 0 0 5px #E8544B inset}
+.sym.good{background:#DFF5E8;outline:4px solid #3FB477;border-radius:50%}
+.sym.bad{background:#FDE3E1;outline:4px solid #E8544B;border-radius:50%}
+.card:disabled{cursor:default}
+.card:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* ---------- 정답 / 오답 피드백 ---------- */
+@keyframes shakeA{
+  0%,100%{transform:translateX(0)}   15%{transform:translateX(-10px)}
+  30%{transform:translateX(10px)}    45%{transform:translateX(-7px)}
+  60%{transform:translateX(7px)}     75%{transform:translateX(-3px)}
+}
+@keyframes shakeB{
+  0%,100%{transform:rotate(180deg) translateX(0)}   15%{transform:rotate(180deg) translateX(-10px)}
+  30%{transform:rotate(180deg) translateX(10px)}    45%{transform:rotate(180deg) translateX(-7px)}
+  60%{transform:rotate(180deg) translateX(7px)}     75%{transform:rotate(180deg) translateX(-3px)}
+}
+@keyframes wash{from{opacity:.32}to{opacity:0}}
+.half.wrong{animation:shakeA .42s ease}
+.half.top.wrong{animation:shakeB .42s ease}
+.half.wrong::before,.half.right::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:3;
+  animation:wash .85s ease-out forwards;
+}
+.half.wrong::before{background:#E8544B}
+.half.right::before{background:#3FB477}
+
+/* 무엇을 눌렀는지 보여주는 작은 조각 */
+.chip-c{display:inline-block;width:17px;height:17px;border-radius:6px;vertical-align:-3px}
+.ms b{font-weight:700}
+
+/* 결과 ---------- */
+#result{align-items:center;justify-content:center;gap:26px;padding:24px}
+#result .who{font-family:var(--display);font-size:38px}
+#result .score{font-size:16px;opacity:.6;font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn{
+  font-family:var(--display);font-size:17px;color:var(--ink);
+  background:#fff;border:none;border-radius:18px;padding:15px 30px;
+  box-shadow:0 2px 0 var(--mute);cursor:pointer;transition:transform .12s ease;
+}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.primary{background:var(--ink);color:#fff;box-shadow:0 2px 0 #16141f}
+.btn:focus-visible,.gamecard:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important}
+  .half.wrong,.half.top.wrong{animation:none !important}
+  .gamecard:active,.btn:active,.swatch:active{transform:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 카드 줄무늬 패턴 (세로 줄무늬라 뒤집어도 같게 보인다) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <pattern id="st0" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="2.4" height="6" fill="#8B7DE8"/></pattern>
+    <pattern id="st1" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="2.4" height="6" fill="#F2994A"/></pattern>
+    <pattern id="st2" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="2.4" height="6" fill="#3DB2C4"/></pattern>
+  </defs></svg>
+
+  <!-- 메뉴 -->
+  <section class="screen on" id="menu">
+    <h1 class="logo">쿵짝<small>둘이서, 폰 하나로</small></h1>
+    <div class="gamelist" id="gamelist"></div>
+    <p class="hint">폰을 가운데 두고 마주 앉으세요.<br>먼저 3점을 내면 이깁니다.</p>
+  </section>
+
+  <!-- 대결 -->
+  <section class="screen" id="arena">
+    <div class="half top" data-p="A">
+      <div class="pips" data-pips="A"></div>
+      <div class="facewrap" data-face="A"></div>
+      <div class="panel" data-panel="A"></div>
+      <div class="caption" data-cap="A"></div>
+      <div class="ms" data-ms="A"></div>
+    </div>
+    <div id="board"></div>
+    <div class="divider"></div>
+    <div class="half" data-p="B">
+      <div class="pips" data-pips="B"></div>
+      <div class="facewrap" data-face="B"></div>
+      <div class="panel" data-panel="B"></div>
+      <div class="caption" data-cap="B"></div>
+      <div class="ms" data-ms="B"></div>
+    </div>
+  </section>
+
+  <!-- 결과 -->
+  <section class="screen" id="result">
+    <div class="facewrap" id="resFace"></div>
+    <div class="who" id="resWho"></div>
+    <div class="score" id="resScore"></div>
+    <div class="btnrow">
+      <button class="btn primary" id="again">다시 대결</button>
+      <button class="btn" id="toMenu">게임 고르기</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+'use strict';
+
+/* =========================================================
+   1. 캐릭터 — 표정이 곧 게임 상태
+   ========================================================= */
+const MOODS = {
+  //        눈                                              입
+  calm : ['<path d="M-22-4h13M9-4h13"/>',                    '<path d="M-7 16q7 5 14 0"/>'],
+  tense: ['<circle cx="-15" cy="-4" r="3"/><circle cx="15" cy="-4" r="3"/>',
+                                                             '<path d="M-8 17h16"/>'],
+  alert: ['<circle cx="-15" cy="-5" r="8"/><circle cx="15" cy="-5" r="8"/>',
+                                                             '<ellipse cx="0" cy="18" rx="9" ry="7"/>'],
+  win  : ['<path d="M-23-2q8-11 15 0M8-2q8-11 15 0"/>',       '<path d="M-11 13q11 12 22 0"/>'],
+  lose : ['<path d="M-23 2q8 9 15 0M8 2q8 9 15 0"/>',         '<path d="M-9 21q9-9 18 0"/>'],
+  foul : ['<path d="M-21-10l12 12M-9-10l-12 12M9-10l12 12M21-10l-12 12"/>',
+                                                             '<path d="M-11 18q5-6 11 0t11 0"/>']
+};
+
+function face(mood, color){
+  const [eyes, mouth] = MOODS[mood] || MOODS.calm;
+  return `<svg class="face" viewBox="-70 -70 140 140" aria-hidden="true">
+    <ellipse cx="0" cy="4" rx="54" ry="50" fill="${color}"/>
+    <g fill="none" stroke="#2E2B3A" stroke-width="5"
+       stroke-linecap="round" stroke-linejoin="round">${eyes}</g>
+    <g fill="#2E2B3A" stroke="#2E2B3A" stroke-width="5"
+       stroke-linecap="round" stroke-linejoin="round">${mouth}</g>
+  </svg>`;
+}
+
+/* =========================================================
+   1-2. 소리 — 음원 파일 없이 코드로 만든다 (용량 0)
+   ========================================================= */
+const Sound = (() => {
+  let ac = null;
+  function ready(){
+    if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  }
+  function tone(freq, delay, dur, type, vol){
+    const c = ready(), o = c.createOscillator(), g = c.createGain();
+    const t = c.currentTime + delay;
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + dur + 0.03);
+  }
+  return {
+    unlock(){ try { ready(); } catch(e){} },
+    ok(){   // 딩-동 (올라가는 두 음)
+      try { tone(880, 0, 0.13, 'sine', .20); tone(1318.5, 0.11, 0.24, 'sine', .18); } catch(e){}
+    },
+    no(){   // 삐- (낮고 거친 한 음)
+      try { tone(170, 0, 0.32, 'square', .13); tone(113, 0.05, 0.30, 'square', .11); } catch(e){}
+    }
+  };
+})();
+
+/* =========================================================
+   2. 셸 — 화면·점수·캐릭터를 관리한다
+      게임은 아래 GAMES 에 { name, icon, desc, start(ctx) } 로 등록만 하면 된다.
+   ========================================================= */
+const WIN_SCORE = 3;
+const COLOR = { A:'var(--a)', B:'var(--b)' };
+const HEX   = { A:'#7FD1B9', B:'#FF8FA3' };
+
+const el = s => document.querySelector(s);
+const halves = { A: el('.half[data-p="A"]'), B: el('.half[data-p="B"]') };
+
+let score = { A:0, B:0 };
+let current = null;   // 현재 게임 모듈
+let cleanup = null;   // 현재 게임의 정리 함수
+
+const ctx = {
+  /** 캐릭터 표정 변경. mood 를 null 로 주면 캐릭터를 숨긴다 */
+  setFace(p, mood){
+    halves[p].querySelector('[data-face]').innerHTML = mood ? face(mood, HEX[p]) : '';
+  },
+  /** 게임별 커스텀 UI 를 넣는 슬롯 */
+  setPanel(p, html){
+    halves[p].querySelector('[data-panel]').innerHTML = html || '';
+  },
+  /** 두 사람이 함께 보는 가운데 판. cls 로 판 레이아웃을 고른다 */
+  setBoard(html, cls){
+    const b = el('#board');
+    b.className = cls || '';
+    b.innerHTML = html || '';
+  },
+  board(){ return el('#board'); },
+  /** 한쪽 버저를 잠근다 */
+  lock(p, on){ halves[p].dataset.locked = on ? '1' : ''; },
+  half(p){ return halves[p]; },
+  /** 캐릭터 아래 한 줄 문구 */
+  setCaption(p, text){ halves[p].querySelector('[data-cap]').textContent = text || ''; },
+  /** 작은 보조 정보 (기록·누른 것 표시 등). HTML 허용 */
+  setInfo(p, html){ halves[p].querySelector('[data-ms]').innerHTML = html || ''; },
+  /** 정답/오답을 소리와 화면으로 동시에 알린다 */
+  judge(p, ok){
+    ok ? Sound.ok() : Sound.no();
+    const h = halves[p];
+    h.classList.remove('wrong','right');
+    void h.offsetWidth;                    // 애니메이션 재시작
+    h.classList.add(ok ? 'right' : 'wrong');
+    setTimeout(() => h.classList.remove('wrong','right'), 900);
+  },
+  /** 배경을 신호색으로 */
+  setSignal(on){ ['A','B'].forEach(p => halves[p].dataset.go = on ? '1' : ''); },
+  /** 양쪽 동시 적용 헬퍼 */
+  both(fn){ ['A','B'].forEach(fn); },
+  /** 한 라운드 승자 확정 */
+  award(winner){
+    score[winner]++;
+    drawPips();
+    if (score[winner] >= WIN_SCORE) { setTimeout(() => finish(winner), 1100); return true; }
+    return false;
+  },
+  other(p){ return p === 'A' ? 'B' : 'A'; },
+  score(){ return { ...score }; }
+};
+
+function drawPips(){
+  ['A','B'].forEach(p => {
+    const box = halves[p].querySelector('[data-pips]');
+    box.innerHTML = Array.from({length:WIN_SCORE},
+      (_,i) => `<i class="pip${i < score[p] ? ' on' : ''}"></i>`).join('');
+  });
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+}
+
+function startGame(key){
+  Sound.unlock();                       // 사용자 조작 시점에만 오디오가 열린다
+  current = GAMES[key];
+  score = { A:0, B:0 };
+  drawPips();
+  ctx.setSignal(false);
+  ctx.setBoard('');
+  ctx.both(p => { ctx.setPanel(p, ''); ctx.setInfo(p, ''); ctx.lock(p, false); });
+  el('#arena').classList.toggle('shared', current.layout === 'shared');
+  show('arena');
+  cleanup = current.start(ctx) || null;
+}
+
+function stopGame(){
+  if (typeof cleanup === 'function') cleanup();
+  cleanup = null;
+  ctx.setSignal(false);
+}
+
+function finish(winner){
+  stopGame();
+  el('#resFace').innerHTML = face('win', HEX[winner]);
+  el('#resWho').textContent = (winner === 'A' ? '민트' : '코랄') + ' 승리';
+  el('#resScore').textContent = `${score.A} : ${score.B}`;
+  show('result');
+}
+
+/* =========================================================
+   3. 게임 1 — 먼저 누르기
+   ========================================================= */
+const GAMES = {
+  reaction: {
+    name: '먼저 누르기',
+    icon: '⚡',
+    desc: '노란불이 켜지면 먼저 탭하세요',
+    start(ctx){
+      let phase = 'idle';      // idle | wait | go | pause
+      let goAt = 0, plannedGo = 0;
+      let timer = null;
+
+      function round(){
+        phase = 'wait';
+        ctx.setSignal(false);
+        ctx.both(p => { ctx.setFace(p,'tense'); ctx.setCaption(p,'기다려'); ctx.setInfo(p,''); });
+        const delay = 1500 + Math.random() * 3000;
+        plannedGo = performance.now() + delay;
+        timer = setTimeout(() => {
+          phase = 'go';
+          goAt = performance.now();
+          ctx.setSignal(true);
+          ctx.both(p => { ctx.setFace(p,'alert'); ctx.setCaption(p,'지금!'); });
+        }, delay);
+      }
+
+      function tap(p){
+        const o = ctx.other(p);
+
+        if (phase === 'wait'){                       // 반칙 — 신호 전에 눌렀다
+          clearTimeout(timer);
+          phase = 'pause';
+          const early = ((plannedGo - performance.now()) / 1000).toFixed(1);
+          ctx.judge(p, false);
+          ctx.setFace(p,'foul'); ctx.setCaption(p,'너무 빨라');
+          ctx.setInfo(p, `신호보다 <b>${early}초</b> 먼저 눌렀다`);
+          ctx.setFace(o,'win');  ctx.setCaption(o,'한 점');
+          ctx.setInfo(o, `상대가 <b>${early}초</b> 먼저 눌렀다`);
+          next(ctx.award(o));
+
+        } else if (phase === 'go'){                  // 성공
+          const ms = Math.round(performance.now() - goAt);
+          phase = 'pause';
+          ctx.setSignal(false);
+          ctx.judge(p, true);
+          ctx.setFace(p,'win');  ctx.setCaption(p,'한 점');  ctx.setInfo(p, `<b>${ms}</b>ms`);
+          ctx.setFace(o,'lose'); ctx.setCaption(o,'놓쳤다'); ctx.setInfo(o, `상대 <b>${ms}</b>ms`);
+          next(ctx.award(p));
+        }
+      }
+
+      function next(gameOver){
+        if (gameOver) { phase = 'end'; return; }
+        timer = setTimeout(round, 1300);
+      }
+
+      const handlers = {};
+      ['A','B'].forEach(p => {
+        handlers[p] = e => { e.preventDefault(); tap(p); };
+        halves[p].addEventListener('pointerdown', handlers[p]);
+      });
+
+      // 시작 안내
+      ctx.both(p => { ctx.setFace(p,'calm'); ctx.setCaption(p,'준비'); ctx.setInfo(p,''); });
+      timer = setTimeout(round, 1200);
+
+      return function stop(){
+        clearTimeout(timer);
+        ['A','B'].forEach(p => halves[p].removeEventListener('pointerdown', handlers[p]));
+      };
+    }
+  }
+};
+
+/* =========================================================
+   3-2. 게임 2 — 색깔 함정
+   ========================================================= */
+const PALETTE = [
+  { key:'red',    label:'빨강', hex:'#E8544B' },
+  { key:'blue',   label:'파랑', hex:'#4B8BE8' },
+  { key:'green',  label:'초록', hex:'#3FB477' },
+  { key:'yellow', label:'노랑', hex:'#F2B705' }
+];
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const shuffle = arr => arr.map(v => [Math.random(), v])
+                          .sort((x, y) => x[0] - y[0]).map(v => v[1]);
+
+GAMES.stroop = {
+  name: '색깔 함정',
+  icon: '🎨',
+  desc: '글자 말고 글자 색을 맞히세요',
+  start(ctx){
+    let answer = null, live = false, timer = null;
+
+    function deal(){
+      const ink = pick(PALETTE);
+      let word = pick(PALETTE);
+      while (word.key === ink.key) word = pick(PALETTE);
+      answer = ink.key;
+
+      // 두 사람에게 같은 배치를 준다 (버튼 순서가 다르면 불공평)
+      const swatches = shuffle(PALETTE).map(c =>
+        `<button class="swatch" data-key="${c.key}" style="background:${c.hex}"
+                 aria-label="${c.label}"></button>`).join('');
+
+      const html = `<div class="word" style="color:${ink.hex}">${word.label}</div>
+                    <div class="swatches">${swatches}</div>`;
+
+      live = true;
+      ctx.both(p => {
+        ctx.setFace(p, null);
+        ctx.setPanel(p, html);
+        ctx.setCaption(p, '글자 색은?');
+        ctx.setInfo(p, '');
+      });
+    }
+
+    function answered(p, key){
+      if (!live) return;
+      live = false;
+      const o = ctx.other(p);
+      const ok = key === answer;
+      ctx.both(q => ctx.setPanel(q, ''));
+
+      const hex = k => PALETTE.find(c => c.key === k).hex;
+      const chip = k => `<i class="chip-c" style="background:${hex(k)}"></i>`;
+      const shown = `누름 ${chip(key)} · 정답 ${chip(answer)}`;
+
+      ctx.judge(p, ok);
+      if (ok){
+        ctx.setFace(p,'win');  ctx.setCaption(p,'정답');
+        ctx.setFace(o,'lose'); ctx.setCaption(o,'한 발 늦었다');
+      } else {
+        ctx.setFace(p,'foul'); ctx.setCaption(p,'글자에 속았다');
+        ctx.setFace(o,'win');  ctx.setCaption(o,'한 점');
+      }
+      ctx.both(q => ctx.setInfo(q, shown));   // 양쪽 다 확인할 수 있게
+      next(ctx.award(ok ? p : o));
+    }
+
+    function next(gameOver){
+      if (gameOver) return;
+      timer = setTimeout(deal, 1300);
+    }
+
+    const handlers = {};
+    ['A','B'].forEach(p => {
+      handlers[p] = e => {
+        const btn = e.target.closest('.swatch');
+        if (!btn) return;
+        e.preventDefault();
+        answered(p, btn.dataset.key);
+      };
+      halves[p].addEventListener('pointerdown', handlers[p]);
+    });
+
+    ctx.both(p => { ctx.setFace(p,'calm'); ctx.setCaption(p,'준비'); ctx.setInfo(p,''); });
+    timer = setTimeout(deal, 1200);
+
+    return function stop(){
+      clearTimeout(timer);
+      ['A','B'].forEach(p => {
+        halves[p].removeEventListener('pointerdown', handlers[p]);
+        ctx.setPanel(p, '');
+      });
+    };
+  }
+};
+
+/* =========================================================
+   3-3. 게임 3 — 삼총사 (공용 판 레이아웃)
+   카드 = 개수·모양·색·채우기 네 성질의 조합 81장.
+   세 장을 골랐을 때 네 성질이 각각 "모두 같거나 모두 다르면" 성립.
+   ========================================================= */
+GAMES.trio = {
+  name: '삼총사',
+  icon: '🔺',
+  desc: '네 성질이 모두 같거나 모두 다른 3장',
+  layout: 'shared',
+  start(ctx){
+    const INK    = ['#8B7DE8', '#F2994A', '#3DB2C4'];
+    const ROWS   = [[50], [35, 65], [20, 50, 80]];   // 개수별 세로 배치
+    const SHAPE  = [
+      '<ellipse cx="0" cy="0" rx="19" ry="10"/>',
+      '<path d="M-19 0 L0 -10 L19 0 L0 10 Z"/>',
+      '<path d="M-19 0 L-10 -10 L10 -10 L19 0 L10 10 L-10 10 Z"/>'
+    ];
+    const LIMIT = 6;   // 버저를 누른 뒤 고를 수 있는 시간(초)
+
+    let deck = [], board = [], sel = [];
+    let claimer = null, paused = false, tick = null, left = 0, verdict = null;
+
+    const isTrio = (a,b,c) =>
+      ['n','shape','color','fill'].every(k => (a[k] + b[k] + c[k]) % 3 === 0);
+
+    function anyTrio(cards){
+      for (let i = 0; i < cards.length - 2; i++)
+        for (let j = i + 1; j < cards.length - 1; j++)
+          for (let k = j + 1; k < cards.length; k++)
+            if (isTrio(cards[i], cards[j], cards[k])) return true;
+      return false;
+    }
+
+    function dealBoard(){
+      do {
+        deck = [];
+        for (let n = 0; n < 3; n++) for (let s = 0; s < 3; s++)
+        for (let c = 0; c < 3; c++) for (let f = 0; f < 3; f++)
+          deck.push({ n, shape:s, color:c, fill:f });
+        deck = shuffle(deck);
+        board = deck.splice(0, 12);
+      } while (!anyTrio(board));   // 정답이 없는 판은 다시 깐다
+    }
+
+    function cardHTML(c, i){
+      const col   = INK[c.color];
+      const paint = c.fill === 0 ? `fill="${col}"`
+                  : c.fill === 1 ? `fill="url(#st${c.color})"`
+                  : 'fill="none"';
+      const g = ROWS[c.n].map(y =>
+        `<g transform="translate(28 ${y})" ${paint} stroke="${col}" stroke-width="3">
+           ${SHAPE[c.shape]}</g>`).join('');
+      const mark = !sel.includes(i) ? '' : verdict ? ' sel ' + verdict : ' sel';
+      return `<button class="card${mark}" data-i="${i}">
+                <svg viewBox="0 0 56 100">${g}</svg></button>`;
+    }
+
+    const render = () => ctx.setBoard(board.map(cardHTML).join(''), 'grid12');
+
+    function open(){
+      claimer = null; paused = false; sel = []; verdict = null;
+      clearInterval(tick);
+      ctx.both(p => {
+        ctx.lock(p, false);
+        ctx.setFace(p, 'calm'); ctx.setCaption(p, '먼저 누르기'); ctx.setInfo(p, '');
+      });
+      render();
+    }
+
+    function claim(p){
+      if (claimer || paused) return;
+      claimer = p; sel = []; left = LIMIT;
+      const o = ctx.other(p);
+      ctx.lock(o, true);
+      ctx.setFace(p, 'tense'); ctx.setCaption(p, '세 장 고르기'); ctx.setInfo(p, left + '초');
+      ctx.setFace(o, 'calm');  ctx.setCaption(o, '대기');        ctx.setInfo(o, '');
+      clearInterval(tick);
+      tick = setInterval(() => {
+        if (--left <= 0) { resolve(false, '시간 초과'); return; }
+        ctx.setInfo(p, left + '초');
+      }, 1000);
+      render();
+    }
+
+    function tapCard(i){
+      if (!claimer) return;
+      const at = sel.indexOf(i);
+      if (at >= 0) sel.splice(at, 1);
+      else if (sel.length < 3) sel.push(i);
+      render();
+      if (sel.length === 3){
+        const [a,b,c] = sel.map(x => board[x]);
+        isTrio(a,b,c) ? resolve(true) : resolve(false, '삼총사가 아니야');
+      }
+    }
+
+    function resolve(ok, why){
+      clearInterval(tick);
+      paused = true;
+      verdict = ok ? 'good' : 'bad';
+      const p = claimer, o = ctx.other(p);
+
+      ctx.judge(p, ok);
+      if (ok){
+        ctx.setFace(p,'win');  ctx.setCaption(p,'찾았다'); ctx.setInfo(p,'');
+        ctx.setFace(o,'lose'); ctx.setCaption(o,'아쉽다'); ctx.setInfo(o,'');
+      } else {
+        const note = sel.length === 3 ? '고른 3장 확인' : '';
+        ctx.setFace(p,'foul'); ctx.setCaption(p, why);    ctx.setInfo(p, note);
+        ctx.setFace(o,'win');  ctx.setCaption(o,'한 점'); ctx.setInfo(o, note);
+      }
+
+      claimer = null;
+      render();                                  // 고른 카드가 초록/빨강으로 남는다
+      if (ctx.award(ok ? p : o)) return;
+
+      setTimeout(() => {
+        if (ok){                                 // 교체는 표시가 끝난 뒤에
+          [...sel].sort((x,y) => y - x).forEach(i => { if (deck.length) board[i] = deck.pop(); });
+          if (!anyTrio(board)) dealBoard();
+        }
+        open();
+      }, 1700);
+    }
+
+    const boardEl = ctx.board();
+    const onBoard = e => {
+      const b = e.target.closest('.card');
+      if (!b) return;
+      e.preventDefault();
+      tapCard(Number(b.dataset.i));
+    };
+    boardEl.addEventListener('pointerdown', onBoard);
+
+    const handlers = {};
+    ['A','B'].forEach(p => {
+      handlers[p] = e => { e.preventDefault(); claim(p); };
+      ctx.half(p).addEventListener('pointerdown', handlers[p]);
+    });
+
+    dealBoard();
+    open();
+
+    return function stop(){
+      clearInterval(tick);
+      boardEl.removeEventListener('pointerdown', onBoard);
+      ['A','B'].forEach(p => {
+        ctx.half(p).removeEventListener('pointerdown', handlers[p]);
+        ctx.lock(p, false);
+      });
+      ctx.setBoard('');
+    };
+  }
+};
+
+/* 앞으로 추가할 게임들 (자리만 표시) */
+/* =========================================================
+   3-4. 게임 4 — 같은 그림 찾기 (공용 판 레이아웃)
+   차수 5 유한사영평면으로 31장을 만든다. 각 장에 그림 6개,
+   어느 두 장을 뽑아도 겹치는 그림은 반드시 정확히 하나.
+   ========================================================= */
+/* 같은 그림 찾기용 아이콘 31종 — 캐릭터와 같은 둥근 톤으로 직접 그린다.
+   이모지는 기기마다 모양이 달라 톤이 깨지므로 쓰지 않는다. */
+const ICON = [
+  /* 0 사과 */`<circle cx="24" cy="27" r="15" fill="#EF7A85"/><path d="M24 12v-4" stroke="#A9784F" stroke-width="3.4" stroke-linecap="round"/><path d="M25 10c4-4 10-3 10-3s0 7-6 7c-3 0-4-2-4-4z" fill="#7BC47F"/>`,
+  /* 1 바나나 */`<path d="M11 13c0 13 9 24 23 24 3 0 5-1 5-3.5 0-1.6-1.3-2.5-3-2.5-11 0-19-9-19-18 0-2-1.3-3.2-3-3.2S11 11 11 13z" fill="#F2C14E"/>`,
+  /* 2 딸기 */`<path d="M24 42c-8-4-12-11-12-17 0-5 5-8 12-8s12 3 12 8c0 6-4 13-12 17z" fill="#EF7A85"/><path d="M15 15h18l-5 5h-8z" fill="#7BC47F"/><g fill="#F7E9B0"><circle cx="20" cy="27" r="1.6"/><circle cx="28" cy="27" r="1.6"/><circle cx="24" cy="33" r="1.6"/></g>`,
+  /* 3 포도 */`<path d="M24 13V7" stroke="#7BC47F" stroke-width="3.4" stroke-linecap="round"/><g fill="#8B7DE8"><circle cx="24" cy="19" r="6"/><circle cx="16" cy="27" r="6"/><circle cx="32" cy="27" r="6"/><circle cx="24" cy="35" r="6"/></g>`,
+  /* 4 잎 */`<path d="M9 39C9 21 23 7 39 7c0 17-13 32-30 32z" fill="#7BC47F"/><path d="M12 36L33 15" stroke="#4E9455" stroke-width="2.8" stroke-linecap="round"/>`,
+  /* 5 꽃 */`<g fill="#FF8FA3"><circle cx="24" cy="12" r="8"/><circle cx="35" cy="21" r="8"/><circle cx="31" cy="34" r="8"/><circle cx="17" cy="34" r="8"/><circle cx="13" cy="21" r="8"/></g><circle cx="24" cy="24" r="6.5" fill="#F2C14E"/>`,
+  /* 6 나무 */`<circle cx="24" cy="19" r="14" fill="#7BC47F"/><rect x="21" y="28" width="6" height="14" rx="3" fill="#A9784F"/>`,
+  /* 7 버섯 */`<path d="M7 25a17 13 0 0134 0z" fill="#EF7A85"/><rect x="19" y="25" width="10" height="16" rx="5" fill="#F3EAD8" stroke="#DCCFB8" stroke-width="1.6"/><circle cx="16" cy="19" r="3" fill="#fff"/><circle cx="30" cy="18" r="2.4" fill="#fff"/>`,
+  /* 8 고양이 */`<path d="M11 17l1-10 9 6zM37 17l-1-10-9 6z" fill="#F2C14E"/><circle cx="24" cy="27" r="14" fill="#F2C14E"/><circle cx="19" cy="25" r="2.3" fill="#2E2B3A"/><circle cx="29" cy="25" r="2.3" fill="#2E2B3A"/><path d="M21 32h6" stroke="#2E2B3A" stroke-width="2.6" stroke-linecap="round"/>`,
+  /* 9 강아지 */`<ellipse cx="10" cy="23" rx="5.5" ry="9" fill="#A9784F"/><ellipse cx="38" cy="23" rx="5.5" ry="9" fill="#A9784F"/><circle cx="24" cy="26" r="13" fill="#C79A6B"/><circle cx="19" cy="24" r="2.3" fill="#2E2B3A"/><circle cx="29" cy="24" r="2.3" fill="#2E2B3A"/><ellipse cx="24" cy="32" rx="3.6" ry="2.8" fill="#2E2B3A"/>`,
+  /* 10 곰 */`<circle cx="12" cy="14" r="6.5" fill="#A9784F"/><circle cx="36" cy="14" r="6.5" fill="#A9784F"/><circle cx="24" cy="27" r="14" fill="#C79A6B"/><circle cx="19" cy="25" r="2.3" fill="#2E2B3A"/><circle cx="29" cy="25" r="2.3" fill="#2E2B3A"/><ellipse cx="24" cy="32" rx="4.2" ry="3.2" fill="#2E2B3A"/>`,
+  /* 11 토끼 */`<ellipse cx="17" cy="12" rx="4.6" ry="10" fill="#F0EBF8" stroke="#C9C2DC" stroke-width="2"/><ellipse cx="31" cy="12" rx="4.6" ry="10" fill="#F0EBF8" stroke="#C9C2DC" stroke-width="2"/><circle cx="24" cy="30" r="12" fill="#F0EBF8" stroke="#C9C2DC" stroke-width="2"/><circle cx="20" cy="29" r="2.1" fill="#2E2B3A"/><circle cx="28" cy="29" r="2.1" fill="#2E2B3A"/><circle cx="24" cy="34" r="2.3" fill="#FF8FA3"/>`,
+  /* 12 새 */`<path d="M13 25c-6-4-11-2-11-2s3 9 10 8z" fill="#3A6FBF"/><circle cx="26" cy="24" r="12" fill="#4B8BE8"/><circle cx="31" cy="21" r="2.4" fill="#fff"/><path d="M37 23l8 3-8 3z" fill="#F2994A"/>`,
+  /* 13 물고기 */`<path d="M35 24l11-8v16z" fill="#3A6FBF"/><ellipse cx="21" cy="24" rx="15" ry="11" fill="#4B8BE8"/><circle cx="14" cy="21" r="2.4" fill="#fff"/>`,
+  /* 14 개구리 */`<circle cx="14" cy="15" r="6.5" fill="#7BC47F"/><circle cx="34" cy="15" r="6.5" fill="#7BC47F"/><circle cx="14" cy="15" r="2.5" fill="#2E2B3A"/><circle cx="34" cy="15" r="2.5" fill="#2E2B3A"/><ellipse cx="24" cy="30" rx="15" ry="12" fill="#7BC47F"/><path d="M17 31q7 6 14 0" stroke="#2E2B3A" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+  /* 15 문어 */`<g fill="#FF8FA3"><circle cx="11" cy="37" r="4.2"/><circle cx="20" cy="39" r="4.2"/><circle cx="28" cy="39" r="4.2"/><circle cx="37" cy="37" r="4.2"/></g><path d="M9 30a15 15 0 0130 0v6H9z" fill="#FF8FA3"/><circle cx="19" cy="26" r="2.3" fill="#2E2B3A"/><circle cx="29" cy="26" r="2.3" fill="#2E2B3A"/>`,
+  /* 16 해 */`<g stroke="#F2C14E" stroke-width="4.2" stroke-linecap="round"><path d="M24 3v6M24 39v6M3 24h6M39 24h6M9 9l4 4M35 35l4 4M39 9l-4 4M13 35l-4 4"/></g><circle cx="24" cy="24" r="11" fill="#F2C14E"/>`,
+  /* 17 달 */`<path d="M28 7a17 17 0 100 34 21 21 0 010-34z" fill="#F2C14E"/>`,
+  /* 18 별 */`<path d="M24 5l5.8 12.1 13.2 1.9-9.5 9.3 2.2 13.1L24 35.2 12.3 41.4l2.2-13.1L5 19l13.2-1.9z" fill="#F2C14E"/>`,
+  /* 19 구름 */`<g fill="#AFC7E8"><circle cx="17" cy="28" r="8"/><circle cx="27" cy="23" r="10"/><circle cx="36" cy="29" r="7"/><rect x="15" y="28" width="23" height="8" rx="4"/></g>`,
+  /* 20 비 */`<g fill="#AFC7E8"><circle cx="18" cy="19" r="8"/><circle cx="28" cy="17" r="9"/><rect x="13" y="19" width="24" height="7" rx="3.5"/></g><g stroke="#4B8BE8" stroke-width="4" stroke-linecap="round"><path d="M17 32v5M25 32v7M33 32v5"/></g>`,
+  /* 21 눈 */`<g stroke="#7FD1B9" stroke-width="3.8" stroke-linecap="round"><path d="M24 5v38M8 14l32 20M40 14L8 34"/></g>`,
+  /* 22 무지개 */`<g fill="none" stroke-width="5" stroke-linecap="round"><path d="M7 38a17 17 0 0134 0" stroke="#EF7A85"/><path d="M14 38a10 10 0 0120 0" stroke="#F2C14E"/><path d="M21 38a3 3 0 016 0" stroke="#7FD1B9"/></g>`,
+  /* 23 하트 */`<path d="M24 41C9 31 5 24 5 18a9.5 9.5 0 0119-4 9.5 9.5 0 0119 4c0 6-4 13-19 23z" fill="#FF8FA3"/>`,
+  /* 24 집 */`<path d="M24 6L4 22h5v19h30V22h5z" fill="#EF7A85"/><rect x="20" y="29" width="8" height="12" rx="1.5" fill="#F3EAD8"/>`,
+  /* 25 열쇠 */`<g stroke="#F2C14E" stroke-width="5" stroke-linecap="round" fill="none"><circle cx="16" cy="17" r="9"/><path d="M22 24l17 17M30 32l4 4M35 37l3 3"/></g>`,
+  /* 26 우산 */`<path d="M5 26a19 19 0 0138 0z" fill="#8B7DE8"/><path d="M24 26v13a4.5 4.5 0 01-9 0" stroke="#2E2B3A" stroke-width="3.4" fill="none" stroke-linecap="round"/>`,
+  /* 27 컵 */`<path d="M32 19h4a5.5 5.5 0 010 11h-4" fill="none" stroke="#5FB39C" stroke-width="4"/><path d="M11 14h22v17a11 11 0 01-22 0z" fill="#7FD1B9"/><path d="M11 14h22" stroke="#5FB39C" stroke-width="4.4" stroke-linecap="round"/>`,
+  /* 28 선물 */`<rect x="7" y="19" width="34" height="22" rx="3" fill="#EF7A85"/><rect x="4" y="12" width="40" height="9" rx="3.5" fill="#F2C14E"/><rect x="21" y="12" width="6" height="29" fill="#F2C14E"/>`,
+  /* 29 종 */`<path d="M24 7a13 13 0 0113 13v12h3.5v4H7.5v-4H11V20A13 13 0 0124 7z" fill="#F2C14E"/><circle cx="24" cy="40" r="4" fill="#F2C14E"/>`,
+  /* 30 시계 */`<circle cx="24" cy="24" r="17" fill="#AFC7E8"/><circle cx="24" cy="24" r="12.5" fill="#F7F6FB"/><path d="M24 15v9l6.5 4.5" stroke="#2E2B3A" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+];
+
+GAMES.match = {
+  name: '같은 그림 찾기',
+  icon: '🔍',
+  desc: '두 원판에 겹치는 그림은 딱 하나',
+  layout: 'shared',
+  start(ctx){
+    const SLOTS = [[50,50],[50,19],[76,37],[68,73],[32,73],[24,37]];
+    const LIMIT = 5;
+    const glyph = i => `<svg viewBox="0 0 48 48">${ICON[i]}</svg>`;
+    const chip  = i => `<svg class="chip-i" viewBox="0 0 48 48">${ICON[i]}</svg>`;
+
+    let cards = [], pair = [], common = null;
+    let claimer = null, paused = false, tick = null, left = 0;
+
+    /* 차수 n(소수)의 사영평면 → n²+n+1 장, 각 장에 n+1 개 */
+    function buildCards(n){
+      const out = [];
+      out.push(Array.from({length:n+1}, (_,k) => k));
+      for (let i = 0; i < n; i++)
+        out.push([0, ...Array.from({length:n}, (_,j) => (n+1) + n*i + j)]);
+      for (let i = 0; i < n; i++)
+        for (let j = 0; j < n; j++)
+          out.push([i+1, ...Array.from({length:n},
+            (_,k) => (n+1) + n*k + ((i*k + j) % n))]);
+      return out;
+    }
+
+    const jit = r => (Math.random() * 2 - 1) * r;
+
+    function discHTML(card){
+      const syms = shuffle(card).map((s, idx) => {
+        const [x, y] = SLOTS[idx];
+        return `<button class="sym" data-s="${s}" style="
+          --x:${(x + jit(4)).toFixed(1)}%; --y:${(y + jit(4)).toFixed(1)}%;
+          --r:${Math.floor(Math.random()*360)}deg;
+          --s:${(0.85 + Math.random()*0.35).toFixed(2)}">${glyph(s)}</button>`;
+      }).join('');
+      return `<div class="dcard">${syms}</div>`;
+    }
+
+    const render = () => ctx.setBoard(pair.map(discHTML).join(''), 'duo');
+
+    function deal(){
+      const [a, b] = shuffle(cards).slice(0, 2);
+      common = a.find(s => b.includes(s));
+      pair = [a, b];
+      render();
+    }
+
+    function open(){
+      claimer = null; paused = false;
+      clearInterval(tick);
+      ctx.both(p => {
+        ctx.lock(p, false);
+        ctx.setFace(p,'calm'); ctx.setCaption(p,'먼저 누르기'); ctx.setInfo(p,'');
+      });
+    }
+
+    function claim(p){
+      if (claimer || paused) return;
+      claimer = p; left = LIMIT;
+      const o = ctx.other(p);
+      ctx.lock(o, true);
+      ctx.setFace(p,'tense'); ctx.setCaption(p,'그림 탭'); ctx.setInfo(p, left + '초');
+      ctx.setFace(o,'calm');  ctx.setCaption(o,'대기');   ctx.setInfo(o,'');
+      clearInterval(tick);
+      tick = setInterval(() => {
+        if (--left <= 0) { resolve(false, '시간 초과', null); return; }
+        ctx.setInfo(p, left + '초');
+      }, 1000);
+    }
+
+    function tapSym(s){
+      if (!claimer) return;
+      resolve(s === common, s === common ? '' : '그건 아니야', s);
+    }
+
+    /* 원판 위에 정답은 초록, 잘못 누른 것은 빨강으로 남긴다 */
+    function markDiscs(picked){
+      ctx.board().querySelectorAll('.sym').forEach(b => {
+        const s = Number(b.dataset.s);
+        if (s === common) b.classList.add('good');
+        else if (s === picked) b.classList.add('bad');
+      });
+    }
+
+    function resolve(ok, why, picked){
+      clearInterval(tick);
+      paused = true;
+      const p = claimer, o = ctx.other(p);
+
+      markDiscs(picked);
+      ctx.judge(p, ok);
+
+      const note = (picked != null && !ok)
+        ? `누름 ${chip(picked)} · 정답 ${chip(common)}`
+        : `정답 ${chip(common)}`;
+
+      if (ok){
+        ctx.setFace(p,'win');  ctx.setCaption(p,'찾았다');
+        ctx.setFace(o,'lose'); ctx.setCaption(o,'아쉽다');
+      } else {
+        ctx.setFace(p,'foul'); ctx.setCaption(p, why);
+        ctx.setFace(o,'win');  ctx.setCaption(o,'한 점');
+      }
+      ctx.both(q => ctx.setInfo(q, note));      // 양쪽 다 확인할 수 있게
+
+      claimer = null;
+      if (ctx.award(ok ? p : o)) return;
+      setTimeout(() => { deal(); open(); }, 1700);
+    }
+
+    const boardEl = ctx.board();
+    const onBoard = e => {
+      const b = e.target.closest('.sym');
+      if (!b) return;
+      e.preventDefault();
+      tapSym(Number(b.dataset.s));
+    };
+    boardEl.addEventListener('pointerdown', onBoard);
+
+    const handlers = {};
+    ['A','B'].forEach(p => {
+      handlers[p] = e => { e.preventDefault(); claim(p); };
+      ctx.half(p).addEventListener('pointerdown', handlers[p]);
+    });
+
+    cards = buildCards(5);
+    deal();
+    open();
+
+    return function stop(){
+      clearInterval(tick);
+      boardEl.removeEventListener('pointerdown', onBoard);
+      ['A','B'].forEach(p => {
+        ctx.half(p).removeEventListener('pointerdown', handlers[p]);
+        ctx.lock(p, false);
+      });
+      ctx.setBoard('');
+    };
+  }
+};
+
+/* 앞으로 추가할 게임들 (자리만 표시) */
+const COMING = [
+  { name:'딱 다섯',     icon:'🍒', desc:'합이 정확히 5가 되는 순간' },
+  { name:'거꾸로 잡기', icon:'👻', desc:'조건이 뒤집히는 순발력 게임' }
+];
+
+/* =========================================================
+   4. 초기화
+   ========================================================= */
+(function init(){
+  const list = el('#gamelist');
+  Object.entries(GAMES).forEach(([key, g]) => {
+    const b = document.createElement('button');
+    b.className = 'gamecard';
+    b.innerHTML = `<span class="chip" style="background:var(--a)">${g.icon}</span>
+                   <span><b>${g.name}</b><span>${g.desc}</span></span>`;
+    b.addEventListener('click', () => startGame(key));
+    list.appendChild(b);
+  });
+  COMING.forEach(g => {
+    const d = document.createElement('div');
+    d.className = 'gamecard soon';
+    d.innerHTML = `<span class="chip" style="background:var(--mute)">${g.icon}</span>
+                   <span><b>${g.name}</b><span>${g.desc}</span></span>`;
+    list.appendChild(d);
+  });
+
+  el('#again').addEventListener('click', () => startGame(
+    Object.keys(GAMES).find(k => GAMES[k] === current)
+  ));
+  el('#toMenu').addEventListener('click', () => { stopGame(); show('menu'); });
+
+  drawPips();
+})();
+</script>
+</body>
+</html>
