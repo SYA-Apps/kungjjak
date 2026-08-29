@@ -33,11 +33,24 @@ kungjjak/
 ├── CLAUDE.md                  # 이 파일
 ├── README.md                  # 작업 이력과 다음 할 일
 ├── .gitignore
-├── web/
-│   └── index.html             # 게임 본체 (이것 하나가 전부)
+├── web/                       # 게임 본체 겸 PWA (그대로 웹 배포 가능)
+│   ├── index.html             # 이 파일 하나가 게임 전부
+│   ├── manifest.json
+│   ├── sw.js                  # 오프라인 캐시. 수정 시 CACHE 버전 올릴 것
+│   └── icons/                 # 앱 아이콘 (tools/make_icons.py 로 생성)
+├── flutter/
+│   ├── README.md              # 안드로이드 래핑 절차
+│   └── main.dart              # WebView 껍데기. app/lib/main.dart 로 복사
+├── tools/
+│   └── make_icons.py          # 아이콘 생성 스크립트
 └── docs/
-    └── 출시체크리스트.md       # Play 스토어 제출까지의 할 일
+    ├── 출시체크리스트.md
+    └── 아이폰-사파리-배포.md
 ```
+
+**출시 전략**: 안드로이드는 Flutter WebView로 감싸 Play 스토어에 먼저 낸다.
+아이폰은 `web/`을 GitHub Pages에 올려 사파리로 접속하게 한다 (네이티브는 나중).
+`app/` 폴더(flutter create 결과물)는 커밋하지 않는다.
 
 ---
 
@@ -141,5 +154,13 @@ fs.writeFileSync('/tmp/chk.js', s.split('<script>')[1].split('</scr'+'ipt>')[0])
 
 ## 현재 상태와 다음 할 일
 
-게임 4개 완성, 실기기 테스트 대기 중.
-자세한 내용은 `README.md`와 `docs/출시체크리스트.md` 참고.
+게임 4개 완성. PWA 설정과 아이콘 준비 완료. **실기기 테스트 대기 중.**
+
+다음 순서:
+1. 실기기 테스트 (`docs/출시체크리스트.md` 0번)
+2. 이름 "쿵짝" 상표 검색 (키프리스) — 아이콘 만들기 전에 확정할 것
+3. 글꼴 임베드 (지금 CDN 의존 → 오프라인에서 깨짐)
+4. Flutter 래핑 (`flutter/README.md`)
+5. Play Console 등록
+
+**게임 로직을 Dart로 옮기지 말 것.** 웹과 앱이 같은 `web/index.html`을 공유해야 한다.

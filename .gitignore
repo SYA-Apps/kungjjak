@@ -20,3 +20,8 @@ key.properties
 # 임시
 /tmp/
 *.log
+
+# flutter create 결과물 (래퍼는 언제든 재생성 가능)
+/app/
+.dart_tool/
+.packages
