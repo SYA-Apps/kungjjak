@@ -25,3 +25,6 @@ key.properties
 /app/
 .dart_tool/
 .packages
+
+# 글꼴 원본 캐시 (embed_fonts.py 가 다시 받는다)
+tools/.fontcache/
