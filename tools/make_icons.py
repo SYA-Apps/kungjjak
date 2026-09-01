@@ -1,6 +1,10 @@
 """쿵짝 앱 아이콘 생성.
 민트/코랄 캐릭터 둘이 마주 보는 구도. 앱 팔레트를 그대로 쓴다.
 python3 tools/make_icons.py 로 실행.
+
+⚠ RGBA 로 저장한다 — Play Console 이 앱 아이콘을 32비트 PNG(알파 포함)로 요구한다.
+그림 자체는 불투명하고(알파 255) 채널만 갖는다 — 아이폰 홈화면 아이콘은
+실제로 투명하면 검게 나오기 때문이다.
 """
 from PIL import Image, ImageDraw
 import os
@@ -32,7 +36,7 @@ def draw_face(d, cx, cy, r, color, look):
 
 
 def build(size):
-    img = Image.new('RGB', (S, S), BG)
+    img = Image.new('RGBA', (S, S), BG + (255,))
     d = ImageDraw.Draw(img)
 
     r = S * 0.195
@@ -58,7 +62,7 @@ def main():
         print('생성:', os.path.relpath(p), f'{size}x{size}')
 
     # 마스크 대응(안드로이드 적응형 아이콘) — 여백을 더 준 버전
-    img = Image.new('RGB', (S, S), BG)
+    img = Image.new('RGBA', (S, S), BG + (255,))
     d = ImageDraw.Draw(img)
     r = S * 0.150
     draw_face(d, S * 0.325, S * 0.5, r, MINT,  look=+1)
