@@ -38,7 +38,8 @@
 | 무엇 | 이름 |
 |---|---|
 | 로컬 폴더 | `Two-player` |
-| GitHub 저장소 · Pages 주소 | `kungjjak` → `sya-apps.github.io/kungjjak/` |
+| GitHub 저장소 | `SYA-Apps/kungjjak` (공개) — 기본 브랜치 `master` |
+| 웹 주소 | **https://sya-apps.github.io/kungjjak/** (2026-09-02 배포) |
 | 안드로이드 `applicationId` | `com.syaapps.kungjjak` — **출시 후 영구 고정, 절대 바꿀 수 없다** |
 
 로마자 표기는 `kungjjak` 이 맞다(ㅉ = `jj`). `kungjak` 은 "쿵작"이 된다.
@@ -225,5 +226,22 @@ fs.writeFileSync(process.env.TMP + '/chk.js', s.split('<script>')[1].split('</sc
    (앱 아이콘 512는 완료. 위 "하지 말 것" 의 두 줄을 지킬 것)
 3. Flutter 래핑 (`flutter/README.md`)
 4. Play Console 등록
+
+## 웹에 반영하는 법 — **push 만으로는 안 바뀐다**
+
+사이트는 `master` 가 아니라 **`gh-pages` 브랜치의 루트**를 본다
+(Pages 는 소스 폴더로 루트나 `/docs` 만 고를 수 있어 `/web` 을 못 쓴다).
+그래서 게임을 고치면 **두 번** 올려야 한다.
+
+```bash
+git push                                        # 소스
+git subtree push --prefix web origin gh-pages   # 배포본 ← 이걸 잊으면 사이트 그대로
+```
+
+`web/index.html` 을 고쳤으면 `web/sw.js` 의 `CACHE` 버전도 올릴 것.
+**안 올리면 이미 방문한 사람에게는 옛 파일이 계속 나간다**(2026-09-01 에 실제로
+실기기가 백지로 보여 한참 헤맸는데, 원인이 남아 있던 옛 서비스워커였다).
+
+---
 
 **게임 로직을 Dart로 옮기지 말 것.** 웹과 앱이 같은 `web/index.html`을 공유해야 한다.
