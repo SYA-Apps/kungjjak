@@ -152,6 +152,29 @@ body{
 .card:disabled{cursor:default}
 .card:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 
+/* ---------- 게임 중 나가기 ----------
+   반쪽 전체가 버저라, 버튼은 .half 밖(#arena 직속)에 얹어 탭이 섞이지 않게 한다.
+   0.7초 눌러야 나가진다 — 대결 중 실수로 눌러 점수가 날아가면 안 되기 때문. */
+.homebtn{
+  position:absolute;z-index:3;
+  width:42px;height:42px;padding:0;border:none;border-radius:50%;
+  background:none;cursor:pointer;opacity:.45;
+  touch-action:none;-webkit-touch-callout:none;
+  transition:opacity .15s ease;
+}
+.homebtn.holding{opacity:1}
+.homebtn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.homebtn svg{width:100%;height:100%;display:block}
+.homebtn .ring{
+  fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;
+  stroke-dasharray:107;stroke-dashoffset:107;   /* 2*pi*17 */
+  transition:stroke-dashoffset .16s ease-out;
+}
+.homebtn.holding .ring{stroke-dashoffset:0;transition:stroke-dashoffset .7s linear}
+/* 각자 자기 기준 왼쪽 아래에 오도록 — 위쪽(A)은 화면이 180도 돌아 있다 */
+#homeA{top:12px;right:12px;transform:rotate(180deg)}
+#homeB{bottom:12px;left:12px}
+
 /* ---------- 메뉴: 내기 점수 고르기 ---------- */
 .setting{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
 .setting .lab{font-size:13px;opacity:.55}
@@ -284,6 +307,27 @@ body{
       <div class="caption" data-cap="B"></div>
       <div class="ms" data-ms="B"></div>
     </div>
+
+    <button class="homebtn" id="homeA" type="button" aria-label="메뉴로 나가기 (길게 누르기)">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="#fff" stroke="#DCDAE8" stroke-width="2"/>
+        <circle class="ring" cx="20" cy="20" r="17"/>
+        <path d="M12.6 20.4 20 13.6l7.4 6.8" fill="none" stroke="#2E2B3A" stroke-width="2.4"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 19.8v6.6h10v-6.6" fill="none" stroke="#2E2B3A" stroke-width="2.4"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="homebtn" id="homeB" type="button" aria-label="메뉴로 나가기 (길게 누르기)">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="#fff" stroke="#DCDAE8" stroke-width="2"/>
+        <circle class="ring" cx="20" cy="20" r="17"/>
+        <path d="M12.6 20.4 20 13.6l7.4 6.8" fill="none" stroke="#2E2B3A" stroke-width="2.4"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 19.8v6.6h10v-6.6" fill="none" stroke="#2E2B3A" stroke-width="2.4"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
   </section>
 
   <!-- 결과 -->
@@ -1666,6 +1710,31 @@ GAMES.mash = {
     Object.keys(GAMES).find(k => GAMES[k] === current)
   ));
   el('#toMenu').addEventListener('click', () => { stopGame(); show('menu'); });
+
+  /* 게임 중 나가기 — 0.7초 눌러야 열린다.
+     반쪽 전체가 버저라 짧은 탭으로 나가면 실수로 대결이 날아간다.
+     포인터를 캡처해 두어야 손이 버튼 밖으로 미끄러져도 취소를 놓치지 않는다. */
+  const HOLD_MS = 700;
+  ['A','B'].forEach(p => {
+    const btn = el('#home' + p);
+    let timer = null;
+    const cancel = () => {
+      clearTimeout(timer); timer = null;
+      btn.classList.remove('holding');
+    };
+    btn.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      try { btn.setPointerCapture(e.pointerId); } catch(_){}
+      btn.classList.add('holding');
+      timer = setTimeout(() => {
+        cancel();
+        stopGame();
+        show('menu');
+      }, HOLD_MS);
+    });
+    ['pointerup','pointercancel','pointerleave'].forEach(ev =>
+      btn.addEventListener(ev, cancel));
+  });
 
   drawPips();
 })();
