@@ -1,6 +1,6 @@
 /* 쿵짝 서비스워커 — 오프라인 지원.
    게임 파일을 바꾸면 CACHE 버전을 올려야 새 파일이 적용된다. */
-const CACHE = 'kungjjak-v5';   /* 구형 브라우저 수정 · 땅따먹기 추가 · 난이도 표시 */
+const CACHE = 'kungjjak-v6';   /* 첫 화면에 쿵·짝 캐릭터 안내 */
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',
