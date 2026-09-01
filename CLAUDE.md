@@ -31,8 +31,20 @@
 
 ## 파일 구조
 
+⚠️ **로컬 폴더는 `C:\SYA\Two-player` 인데 저장소 이름은 `kungjjak` 이다** — 일부러 다르다.
+폴더는 처음에 지은 이름 그대로 두고, 밖으로 나가는 이름만 앱 이름에 맞췄다.
+다른 데서 `git clone` 하면 `kungjjak/` 로 받아진다.
+
+| 무엇 | 이름 |
+|---|---|
+| 로컬 폴더 | `Two-player` |
+| GitHub 저장소 · Pages 주소 | `kungjjak` → `sya-apps.github.io/kungjjak/` |
+| 안드로이드 `applicationId` | `com.syaapps.kungjjak` — **출시 후 영구 고정, 절대 바꿀 수 없다** |
+
+로마자 표기는 `kungjjak` 이 맞다(ㅉ = `jj`). `kungjak` 은 "쿵작"이 된다.
+
 ```
-kungjjak/
+kungjjak/                      # 저장소 기준. 이 PC 에서는 Two-player/
 ├── CLAUDE.md                  # 이 파일
 ├── README.md                  # 작업 이력과 다음 할 일
 ├── .gitignore
