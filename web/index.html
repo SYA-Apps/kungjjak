@@ -45,6 +45,10 @@ body{
    주소창이 보이는 동안 아래가 잘린다. dvh 는 크롬 108+ 라 구형에서 못 쓴다.
    position:fixed + 네 변 고정은 어디서나 '지금 보이는 높이' 에 딱 맞는다. */
 #app{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
+/* 스크롤바를 숨긴다 — 전체화면 게임이라 회색 막대가 화면에 걸치면 그대로 거슬린다.
+   2026-09-02 실기기(S8)에서 확인: 스크롤될 것이 없는 '대결' 화면 오른쪽에도 떠 있었다.
+   손가락으로 쓸어 넘기는 것은 그대로 된다 — 보이는 막대만 없앤다. */
+::-webkit-scrollbar{display:none}
 
 /* ---------- 화면 전환 ---------- */
 .screen{position:absolute;top:0;right:0;bottom:0;left:0;display:none;flex-direction:column}
