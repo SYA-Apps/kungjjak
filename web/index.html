@@ -33,7 +33,11 @@
   --body:'Gothic A1','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overscroll-behavior:none}
+/* 문서 자체는 절대 스크롤되지 않는다 — 화면 전체는 #app(position:fixed) 이 채우고,
+   스크롤이 필요한 것은 #menu 안에서만 한다. overflow 를 안 막으면 안드로이드 웹뷰가
+   문서용 스크롤바를 그려서 대결 화면 오른쪽에도 회색 막대가 남는다(2026-09-02 S8 확인).
+   그 막대는 CSS ::-webkit-scrollbar 로는 안 없어진다 — 웹뷰가 직접 그리는 것이라서다. */
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 body{
   font-family:var(--body);
   background:var(--bg);
