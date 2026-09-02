@@ -209,6 +209,7 @@ fs.writeFileSync(process.env.TMP + '/chk.js', s.split('<script>')[1].split('</sc
 
 게임 10개 완성. PWA 설정·아이콘·글꼴 임베드 완료. 외부 의존 0건.
 **이름 "쿵짝" 상표 확정 · 실기기(갤럭시 S8) 1차 테스트 완료 — 둘 다 2026-09-01.**
+**웹 배포 완료 · 안드로이드 APK 빌드·설치·동작 확인 완료 — 둘 다 2026-09-02.**
 
 **2026-09-01 게임 구성 변경**: **거짓말쟁이를 빼고 땅따먹기를 넣었다**(10개 유지).
 거짓말쟁이는 ① 둘이서는 심리전이 성립하지 않아 사실상 찍기가 되고, ② "눈을 감으세요" 를
@@ -221,11 +222,13 @@ fs.writeFileSync(process.env.TMP + '/chk.js', s.split('<script>')[1].split('</sc
 근거는 `docs/출시체크리스트.md` 2번에 표로 남겼다.
 
 다음 순서:
-1. 실기기 테스트 (`docs/출시체크리스트.md` 0번) — 게임이 10개로 늘어 확인할 게 많아졌다
+1. **릴리스 서명 키** (`flutter/README.md` 7번) — 지금 APK 는 디버그 키라 스토어가 거부한다.
+   🔑 **잃어버리면 앱을 영영 업데이트할 수 없으니 백업 위치부터 정한다.**
 2. 스토어 자산 — 피처 그래픽 1024×500, 스크린샷 4~8장
    (앱 아이콘 512는 완료. 위 "하지 말 것" 의 두 줄을 지킬 것)
-3. Flutter 래핑 (`flutter/README.md`)
-4. Play Console 등록
+3. Play Console 등록
+4. 사람이 폰을 쥐고 하는 확인 (`docs/출시체크리스트.md` 0번) — 특히 **연타 대결 멀티터치**는
+   두 사람이 동시에 두드려야 확인된다. 자동화로 못 한다
 
 ## 웹에 반영하는 법 — **push 만으로는 안 바뀐다**
 
@@ -241,6 +244,22 @@ git subtree push --prefix web origin gh-pages   # 배포본 ← 이걸 잊으면
 `web/index.html` 을 고쳤으면 `web/sw.js` 의 `CACHE` 버전도 올릴 것.
 **안 올리면 이미 방문한 사람에게는 옛 파일이 계속 나간다**(2026-09-01 에 실제로
 실기기가 백지로 보여 한참 헤맸는데, 원인이 남아 있던 옛 서비스워커였다).
+
+## 앱에 반영하는 법 — **여기도 복사를 잊으면 옛 게임이 나간다**
+
+안드로이드 앱은 `web/` 을 **복사해 넣은** `app/assets/web/` 을 읽는다. 웹과 달리
+자동으로 따라가지 않는다. 게임을 고쳤으면:
+
+```bash
+rm -rf app/assets/web && cp -r web app/assets/web    # ← 이걸 잊으면 옛 게임이 빌드된다
+cd app && flutter build apk --release
+adb install -r build/app/outputs/flutter-apk/app-release.apk
+```
+
+`app/` 은 `.gitignore` 에 들어 있어 커밋되지 않는다(`flutter create` 결과물이라
+언제든 다시 만들 수 있다). 커밋되는 것은 `flutter/main.dart` 와 `flutter/README.md` 뿐이니,
+**앱 껍데기를 고칠 때는 `flutter/main.dart` 를 고치고 `app/lib/main.dart` 로 복사한다.**
+반대로 하면 다음에 `app/` 을 다시 만들 때 날아간다.
 
 ---
 
