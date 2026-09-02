@@ -103,7 +103,7 @@ python tools/embed_fonts.py    # 여러 번 돌려도 안전하다
 ```js
 GAMES.키 = {
   name: '이름', icon: '🎲', desc: '한 줄 설명',
-  level: 2,                  // 난이도 1 쉬움 · 2 보통 · 3 어려움 (메뉴에 점으로 뜬다)
+  level: 2,                  // 난이도 1 쉬움 · 2 보통 · 3 어려움 (메뉴에 글자 알약으로 뜬다)
   layout: 'shared',          // 공용 판이면. 분할 화면이면 생략
   start(ctx){
     // 게임 로직
