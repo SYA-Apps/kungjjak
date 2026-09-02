@@ -8,7 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-const kBg = Color(0xFFF2F1F8); // 앱 배경색. web/index.html 의 --bg 와 같아야 한다
+// web/index.html 의 :root 변수와 같은 값을 쓴다. 한쪽만 바꾸면 색이 어긋난다.
+const kBg   = Color(0xFFF2F1F8); // --bg   앱 배경색
+const kInk  = Color(0xFF2E2B3A); // --ink  글자
+const kMint = Color(0xFF7FD1B9); // --a    쿵
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +28,17 @@ class KungjjakApp extends StatelessWidget {
     return MaterialApp(
       title: '쿵짝',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(scaffoldBackgroundColor: kBg),
+      // ⚠ ThemeData() 를 그냥 두면 머티리얼 기본 '보라'가 대화상자 버튼에 나온다.
+      // 게임 화면은 WebView 라 안 물들지만 Flutter 위젯(대화상자)은 물든다.
+      theme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: kBg,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: kMint,
+          surface: Colors.white,
+          onSurface: kInk,
+        ),
+      ),
       home: const GameView(),
     );
   }
@@ -67,15 +80,28 @@ class _GameViewState extends State<GameView> {
       context: context,
       builder: (c) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text('쿵짝을 끝낼까요?'),
+        // M3 는 흰 배경 위에 seed 색 틴트를 얇게 덧입힌다 — 흰색을 흰색으로 두려면 꺼야 한다.
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        title: const Text(
+          '쿵짝을 끝낼까요?',
+          style: TextStyle(color: kInk, fontSize: 20, fontWeight: FontWeight.w700),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
         actions: [
+          // '계속하기' 가 기본 행동이라 진하게 둔다. 실수로 끝내는 쪽이 손해가 크다.
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('계속하기'),
+            style: TextButton.styleFrom(foregroundColor: kInk),
+            child: const Text('계속하기',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           ),
+          // 보조 글자는 먹색 55% — web 의 .hint(opacity:.5) 와 같은 결.
           TextButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('끝내기'),
+            style: TextButton.styleFrom(
+                foregroundColor: kInk.withValues(alpha: 0.55)),
+            child: const Text('끝내기', style: TextStyle(fontSize: 16)),
           ),
         ],
       ),
