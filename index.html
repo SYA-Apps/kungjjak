@@ -101,6 +101,11 @@ body{
   flex:1;position:relative;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:14px;
   background:var(--bg);transition:background .12s ease;
+  /* 🚨 none 이어야 한다 — body 의 manipulation 만으로는 부족하다.
+     manipulation 은 «두 손가락 = 핀치 줌» 을 브라우저 몫으로 남겨 두기 때문에,
+     두 사람이 동시에 두드리면 브라우저가 제스처로 가로채 연타가 씹힌다.
+     대결 화면은 스크롤도 확대도 필요 없으니 전부 앱이 가져간다. */
+  touch-action:none;
 }
 .half.top{transform:rotate(180deg)}
 .half[data-go="1"]{background:var(--go)}
@@ -137,6 +142,7 @@ body{
 #arena.shared #board{
   flex:1;min-height:0;padding:12px;
   border-top:3px solid var(--mute);border-bottom:3px solid var(--mute);
+  touch-action:none;          /* .half 와 같은 이유 — 두 손가락을 브라우저에 뺏기지 않는다 */
 }
 #arena.shared #board.grid12{
   display:grid;
