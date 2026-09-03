@@ -9,6 +9,7 @@
 
 지켜야 하는 것
     - 1024×500, **투명도 없음**(RGB). 플레이가 알파를 거부한다.
+    - 2048×1000 도 함께 낸다. 1024×500 이 «너무 작다» 고 반려되는 일이 있어서다.
     - 글꼴은 tools/.fontcache/ 의 Jua·Gothic A1 (둘 다 SIL OFL — 재배포 가능).
       없으면 `python tools/embed_fonts.py` 를 한 번 돌리면 받아진다.
     - ⚠ **이모지를 쓰지 않는다.** 아이폰 이모지는 애플 저작권이고, 시스템마다 그림이
@@ -21,6 +22,7 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONT = os.path.join(ROOT, 'tools', '.fontcache')
 OUT  = os.path.join(ROOT, 'store-assets', 'feature-graphic-1024x500.png')
+OUT2 = os.path.join(ROOT, 'store-assets', 'feature-graphic-2048x1000.png')
 
 W, H  = 1024, 500
 BG    = (0xF2, 0xF1, 0xF8)   # --bg
@@ -98,6 +100,11 @@ def build():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     img.resize((W, H), Image.LANCZOS).save(OUT)
     print(f'{OUT}  ({W}×{H}, RGB)')
+
+    # 2배본도 같이 낸다. 플레이가 1024×500 을 «너무 작다» 며 반려하는 일이 있어
+    # (사랑나라 전례) 그때 바로 올릴 수 있게 미리 만들어 둔다. 안 쓰면 그만이다.
+    img.resize((W * 2, H * 2), Image.LANCZOS).save(OUT2)
+    print(f'{OUT2}  ({W*2}x{H*2}, RGB) - 반려 시 대체용')
 
 
 if __name__ == '__main__':
