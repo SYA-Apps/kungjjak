@@ -204,6 +204,12 @@ USB 메모리나 종이에 적어 둔 복원 정보처럼 **PC 와 운명이 갈
 
 나란히·사랑나라와 **같은 방식**이다. 다만 **키를 두는 자리만 다르다** — 아래 7-2 참고.
 
+🚨 **반드시 «따로 연 PowerShell 창» 에서 실행한다.**
+이 명령은 **비밀번호를 대화식으로 물어보는데**, Claude Code 의 `!` 로 띄운 셸이나
+도구가 돌리는 셸은 **입력을 받을 수 없어** 그 자리에서 실패한다.
+그리고 `!` 는 PowerShell 이 아니라 **Bash** 로 들어가서 `&` 가 문법 오류가 난다
+(2026-09-03 실제로 겪었다: `syntax error near unexpected token '&'`).
+
 **PowerShell** — 맨 앞의 `&` 를 빠뜨리지 말 것.
 따옴표로 시작하면 PowerShell 이 실행할 명령이 아니라 그냥 글자로 봐서
 `예기치 않은 '-genkeypair' 토큰입니다` 오류가 난다(사랑나라에서 겪었다).
@@ -225,6 +231,12 @@ USB 메모리나 종이에 적어 둔 복원 정보처럼 **PC 와 운명이 갈
 | `시/도 이름을 입력하십시오. [Unknown]:` | 그냥 엔터 |
 | `두 자리 국가 코드를 입력하십시오. [Unknown]:` | **`KR`** |
 | `...이(가) 맞습니까? [아니오]:` | **`y`** 엔터 ← 엔터만 치면 처음부터 다시 물어본다 |
+
+Bash(깃배시)로 하겠다면 `&` 를 빼고 경로 표기를 바꾼다 — **대화식 창인 것은 마찬가지다**:
+
+```bash
+"/c/Program Files/Android/Android Studio/jbr/bin/keytool.exe" -genkeypair -v   -keystore "$USERPROFILE/kungjjak-upload.jks"   -alias upload -keyalg RSA -keysize 2048 -validity 10000
+```
 
 🚨 **개인 메일·본명을 넣지 않는다.** 서명서에 영구히 남고 지울 수 없다.
 여기 적는 값은 스토어에 공개되지 않으니 `SYA` 로 통일한다.
