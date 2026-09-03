@@ -200,37 +200,71 @@ USB 메모리나 종이에 적어 둔 복원 정보처럼 **PC 와 운명이 갈
 **`key.properties` 를 만들어 두기만 하면** 다음 릴리스 빌드부터 업로드 키로 서명된다.
 파일이 없으면 디버그 키로 서명하므로 **지금도 빌드는 멀쩡히 돈다**(확인함, AAB 42.3MB).
 
-### 7-1. 키 만들기 (사람이 직접 — 비밀번호를 물어본다)
+### 7-1. 키 만들기 — **사람이 직접** (비밀번호를 물어본다)
 
-⚠️ **`keytool` 이 PATH 에 없다.** 안드로이드 스튜디오 안의 것을 쓴다:
+나란히·사랑나라와 **같은 방식**이다. 다만 **키를 두는 자리만 다르다** — 아래 7-2 참고.
 
-```bash
-"/c/Program Files/Android/Android Studio/jbr/bin/keytool.exe" \
-  -genkeypair -v -keystore "$USERPROFILE/kungjjak-upload.jks" \
-  -storetype PKCS12 -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+**PowerShell** — 맨 앞의 `&` 를 빠뜨리지 말 것.
+따옴표로 시작하면 PowerShell 이 실행할 명령이 아니라 그냥 글자로 봐서
+`예기치 않은 '-genkeypair' 토큰입니다` 오류가 난다(사랑나라에서 겪었다).
+
+```powershell
+& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkeypair -v -keystore C:\Users\배이삭\kungjjak-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
 ```
 
-- **PKCS12** 라 키스토어·키 비밀번호가 같다(하나만 정하면 된다).
-- `-validity 10000` = 약 27년. 구글은 **2033-10-22 이후까지** 유효할 것을 요구한다.
-- 이름·조직을 물어보면 **`SYA`** 로 통일한다.
-  🚨 **개인 메일·본명을 넣지 않는다** — 서명서에 영구히 남고 지울 수 없다.
+**물어보는 것에 답하는 법** — 비밀번호는 화면에 안 보인다(별표도 안 나온다). 그냥 치고 엔터.
 
-🔑 **만들자마자 백업한다.** 잃어버리면 앱을 영영 업데이트할 수 없다.
-원드라이브는 피한다(PC 와 함께 날아간다). **USB 메모리처럼 PC 와 운명이 갈리는 곳**에 둔다.
-비밀번호는 비밀번호 관리자에 — **대화창에 붙여넣지 않는다.**
+| 화면에 뜨는 말 | 뭘 넣나 |
+|---|---|
+| `키 저장소 비밀번호 입력:` | 정한 비밀번호. **6자 이상.** 반드시 적어 둘 것 |
+| `새 비밀번호 다시 입력:` | 같은 비밀번호 한 번 더 |
+| `이름과 성을 입력하십시오. [Unknown]:` | **`SYA`** |
+| `조직 단위 이름을 입력하십시오. [Unknown]:` | 그냥 엔터 |
+| `조직 이름을 입력하십시오. [Unknown]:` | **`SYA`** |
+| `구/군/시 이름을 입력하십시오? [Unknown]:` | 그냥 엔터 |
+| `시/도 이름을 입력하십시오. [Unknown]:` | 그냥 엔터 |
+| `두 자리 국가 코드를 입력하십시오. [Unknown]:` | **`KR`** |
+| `...이(가) 맞습니까? [아니오]:` | **`y`** 엔터 ← 엔터만 치면 처음부터 다시 물어본다 |
+
+🚨 **개인 메일·본명을 넣지 않는다.** 서명서에 영구히 남고 지울 수 없다.
+여기 적는 값은 스토어에 공개되지 않으니 `SYA` 로 통일한다.
+
+**끝나면 `C:\Users\배이삭\kungjjak-upload.jks` 가 생긴다.**
+
+### 7-1-2. 🔑 백업 — **여기서 실패하면 앱이 죽는다**
+
+키를 잃어버리면 **이 앱을 영영 업데이트할 수 없다.** 새 키로 서명한 앱은 Play 가
+같은 앱으로 인정하지 않아, 쌓은 사용자를 버리고 새 앱으로 다시 시작해야 한다.
+
+- ❌ **원드라이브에 두지 않는다** — 동기화 사고나 계정 사고로 PC 와 같이 날아간다.
+- ✅ **USB 메모리처럼 PC 와 운명이 갈리는 곳**에 `.jks` 파일을 복사해 둔다.
+- ✅ **비밀번호는 비밀번호 관리자**에. 대화창에 붙여넣지 않는다.
+- 📌 Play 앱 서명을 켜면 **업로드 키를 잃어도 구글에 재설정을 요청할 수 있다.**
+  첫 업로드 때 반드시 켤 것. 다만 **재설정은 며칠 걸리므로** 백업이 먼저다.
 
 ### 7-2. `app/android/key.properties` 만들기
 
+견본을 복사해 값만 채운다:
+
+```bash
+cp flutter/key.properties.example app/android/key.properties
+```
+
 ```properties
-storePassword=위에서_정한_비밀번호
-keyPassword=위에서_정한_비밀번호
+storePassword=7-1 에서 정한 비밀번호
+keyPassword=같은 비밀번호
 keyAlias=upload
-storeFile=C:/Users/<사용자>/kungjjak-upload.jks
+storeFile=C:/Users/배이삭/kungjjak-upload.jks
 ```
 
 - 경로는 **슬래시(`/`)** 로 쓴다. 역슬래시는 이스케이프로 먹힌다.
-- `app/` 전체가 `.gitignore` 에 들어 있고, 그 위에 `key.properties`·`*.jks` 도
-  따로 막혀 있다. **두 겹이라 실수로도 안 올라간다.**
+- PKCS12 라 **비밀번호가 하나뿐**이다. 두 줄에 같은 값을 넣는 게 맞다.
+- `.gitignore` 가 **두 겹**으로 막는다(`app/` 통째로 + `key.properties` 이름으로).
+
+🔑 **`storeFile` 이 `app/` 밖을 가리키는 것이 중요하다 — 여기가 나란히·사랑나라와 다른 점이다.**
+그 둘은 `android/` 가 영구 폴더라 그 안에 키를 뒀지만, **쿵짝의 `app/` 은 `flutter create`
+결과물이라 언제든 지우고 다시 만든다.** 키를 그 안에 두면 폴더를 다시 만드는 순간
+**앱을 영영 업데이트 못 하게 된다.**
 
 ### 7-3. gradle 배선 — **이미 되어 있다**
 

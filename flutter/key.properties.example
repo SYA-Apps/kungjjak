@@ -1,0 +1,19 @@
+# app/android/key.properties 로 복사해 값을 채운다.
+#
+#   cp flutter/key.properties.example app/android/key.properties
+#
+# 🚨 채운 파일은 절대 커밋하지 않는다. .gitignore 가 두 겹으로 막는다
+#    (app/ 통째로 + key.properties 이름으로). 이 .example 만 커밋된다.
+#
+# 🔑 storeFile 은 app/ 밖을 가리켜야 한다.
+#    app/ 은 flutter create 결과물이라 언제든 지우고 다시 만드는 폴더다.
+#    키를 그 안에 두면 폴더를 다시 만들 때 «앱을 영영 업데이트 못 하는 사고»가 난다.
+#    (나란히·사랑나라는 android/ 가 영구 폴더라 그 안에 두는 게 맞았다. 쿵짝은 다르다.)
+#
+# 📌 keytool 이 만드는 키는 PKCS12 라 비밀번호가 하나뿐이다.
+#    그래서 storePassword 와 keyPassword 에 같은 값을 넣는 것이 맞다.
+
+storePassword=여기에_정한_비밀번호
+keyPassword=여기에_같은_비밀번호
+keyAlias=upload
+storeFile=C:/Users/배이삭/kungjjak-upload.jks
