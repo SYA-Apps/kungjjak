@@ -45,6 +45,27 @@ cp -r web app/assets/web
 
 ---
 
+## 2-2. 커밋되는 원본은 `flutter/` 에 있다 — **거기서 고치고 복사한다**
+
+`app/` 은 `.gitignore` 에 들어 있어 **커밋되지 않는다**(`flutter create` 결과물이라
+언제든 다시 만들 수 있다). 그래서 손으로 만든 것은 전부 `flutter/` 에 원본을 둔다.
+**반대로 하면 `app/` 을 다시 만들 때 통째로 날아간다.**
+
+| `flutter/` 의 원본 | 복사해 넣을 곳 |
+|---|---|
+| `main.dart` | `app/lib/main.dart` |
+| `build.gradle.kts` | `app/android/app/build.gradle.kts` |
+| `proguard-rules.pro` | `app/android/app/proguard-rules.pro` |
+
+```bash
+cp flutter/main.dart          app/lib/main.dart
+cp flutter/build.gradle.kts   app/android/app/build.gradle.kts
+cp flutter/proguard-rules.pro app/android/app/proguard-rules.pro
+```
+
+⚠️ `key.properties` 와 `.jks` 는 **여기에 두지 않는다** — 비밀이라 커밋되면 안 된다.
+그 둘만은 `app/` 안에서 직접 만든다(7번).
+
 ## 3. main.dart 교체
 
 ```bash
@@ -173,14 +194,30 @@ flutter build appbundle --release   # 스토어 제출용 → build/app/outputs/
 백업 위치로 **원드라이브는 피한다** — 동기화 충돌이나 계정 사고로 같이 날아간다.
 USB 메모리나 종이에 적어 둔 복원 정보처럼 **PC 와 운명이 갈리는 곳**이 좋다.
 
+### ✅ 배선은 끝났다 (2026-09-03) — 사람이 할 일은 **키 만들기 하나**
+
+`build.gradle.kts` 와 `proguard-rules.pro` 는 이미 넣어 뒀다.
+**`key.properties` 를 만들어 두기만 하면** 다음 릴리스 빌드부터 업로드 키로 서명된다.
+파일이 없으면 디버그 키로 서명하므로 **지금도 빌드는 멀쩡히 돈다**(확인함, AAB 42.3MB).
+
 ### 7-1. 키 만들기 (사람이 직접 — 비밀번호를 물어본다)
 
+⚠️ **`keytool` 이 PATH 에 없다.** 안드로이드 스튜디오 안의 것을 쓴다:
+
 ```bash
-keytool -genkey -v -keystore "$USERPROFILE/kungjjak-upload.jks"   -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+"/c/Program Files/Android/Android Studio/jbr/bin/keytool.exe" \
+  -genkeypair -v -keystore "$USERPROFILE/kungjjak-upload.jks" \
+  -storetype PKCS12 -keyalg RSA -keysize 2048 -validity 10000 -alias upload
 ```
 
-비밀번호 두 번(키스토어·키)과 이름·조직을 물어본다.
-**조직 정보에 개인 메일·본명을 넣지 않는다** — 서명서에 남는다. `SYA` 로 통일한다.
+- **PKCS12** 라 키스토어·키 비밀번호가 같다(하나만 정하면 된다).
+- `-validity 10000` = 약 27년. 구글은 **2033-10-22 이후까지** 유효할 것을 요구한다.
+- 이름·조직을 물어보면 **`SYA`** 로 통일한다.
+  🚨 **개인 메일·본명을 넣지 않는다** — 서명서에 영구히 남고 지울 수 없다.
+
+🔑 **만들자마자 백업한다.** 잃어버리면 앱을 영영 업데이트할 수 없다.
+원드라이브는 피한다(PC 와 함께 날아간다). **USB 메모리처럼 PC 와 운명이 갈리는 곳**에 둔다.
+비밀번호는 비밀번호 관리자에 — **대화창에 붙여넣지 않는다.**
 
 ### 7-2. `app/android/key.properties` 만들기
 
@@ -191,48 +228,67 @@ keyAlias=upload
 storeFile=C:/Users/<사용자>/kungjjak-upload.jks
 ```
 
-⚠ **이 파일은 절대 커밋하지 않는다.** `app/` 전체가 `.gitignore` 에 들어 있어 지금은
-안전하지만, 나중에 `app/` 을 커밋하게 되면 `key.properties` 와 `*.jks` 를 따로 막을 것.
+- 경로는 **슬래시(`/`)** 로 쓴다. 역슬래시는 이스케이프로 먹힌다.
+- `app/` 전체가 `.gitignore` 에 들어 있고, 그 위에 `key.properties`·`*.jks` 도
+  따로 막혀 있다. **두 겹이라 실수로도 안 올라간다.**
 
-### 7-3. `app/android/app/build.gradle.kts` 에서 참조
+### 7-3. gradle 배선 — **이미 되어 있다**
+
+`app/android/app/build.gradle.kts` 는 이렇게 되어 있다:
 
 ```kotlin
-import java.util.Properties
-import java.io.FileInputStream
-
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
-
-android {
-    signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
-        }
-    }
-    buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("release")   // ← debug 에서 바꾼다
-        }
-    }
+...
+signingConfig = if (keystorePropertiesFile.exists()) {
+    signingConfigs.getByName("release")
+} else {
+    signingConfigs.getByName("debug")   // 키 없는 PC 에서도 빌드가 돌게
 }
 ```
 
-기본 상태는 `signingConfig = signingConfigs.getByName("debug")` 다. **이대로 빌드한 AAB 는
-Play Console 이 거부한다.**
+🚨 **«없으면 디버그» 조건을 빼지 말 것.** 조건 없이 `keystoreProperties["keyAlias"] as String`
+을 쓰면 `key.properties` 가 없는 PC 에서 **빌드가 통째로 깨진다**(널 캐스팅).
 
-### 7-4. 서명이 바뀌었는지 확인
+### 7-4. R8 — **쿵짝도 돌아간다**
+
+«게임이 웹이니 상관없다» 고 넘기기 쉬운데, 증거가 있다:
+
+```
+app/build/app/outputs/mapping/release/mapping.txt   ← 이게 생기면 R8 이 돈 것이다
+```
+
+그래서 `app/android/app/proguard-rules.pro` 에 **Flutter 플러그인 keep 규칙**을 넣었다
+(`webview_flutter` 가 여기에 걸린다). 광고·ML Kit·Room 규칙은 쿵짝에 해당 없어 뺐다 —
+나중에 그런 라이브러리를 붙이면 `C:\SYA\playbook\templates\proguard-rules.pro` 에서 가져온다.
+
+### 7-5. 서명이 실제로 바뀌었는지 확인
 
 ```bash
-keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab
+"/c/Program Files/Android/Android Studio/jbr/bin/keytool.exe" \
+  -printcert -jarfile build/app/outputs/bundle/release/app-release.aab
 ```
 
-소유자가 `CN=Android Debug` 가 아니라 7-1 에서 넣은 이름으로 나와야 한다.
+**2026-09-03 현재는 `CN=Android Debug` 로 나온다** — 아직 키를 안 만들었으니 정상이다.
+키를 만든 뒤 다시 돌려 **`CN=SYA`** 로 바뀌면 성공이다.
+바뀌지 않았으면 `key.properties` 의 경로나 파일 위치가 틀린 것이다.
+
+🚨 **빌드가 성공했다고 제출할 수 있는 게 아니다.** 디버그 서명 AAB 는 Play Console 이 거부한다.
+
+### 7-6. 키를 바꾼 뒤 실기기 재확인 — **덮어 설치가 안 된다**
+
+서명이 달라지므로 폰에 깔린 기존 앱 위에 덮이지 않는다. **먼저 지우고 새로 깐다:**
+
+```bash
+adb uninstall com.syaapps.kungjjak
+adb install build/app/outputs/flutter-apk/app-release.apk
+```
+
+그리고 **게임 10개를 다시 한 번 훑는다.** proguard 규칙이 들어간 첫 빌드라
+R8 이 무엇을 지웠는지는 실기기에서만 드러난다.
 
 ---
 
