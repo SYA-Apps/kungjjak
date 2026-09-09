@@ -28,3 +28,7 @@ key.properties
 
 # 글꼴 원본 캐시 (embed_fonts.py 가 다시 받는다)
 tools/.fontcache/
+
+# 파이썬 캐시
+__pycache__/
+*.pyc

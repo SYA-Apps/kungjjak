@@ -74,12 +74,51 @@ cp flutter/main.dart app/lib/main.dart
 
 ---
 
+## 3-1. 실기기에 USB 없이 붙기 (갤럭시 S8)
+
+매번 케이블을 꽂지 않아도 된다. **다만 처음 한 번은 USB 가 필요하다** —
+USB 없이 처음부터 붙는 무선 디버깅은 **안드로이드 11부터**이고 S8 은 9다.
+
+**도구가 다 해 준다**(기기 ID·와이파이 주소를 스스로 찾는다). 앱과 무관한 공용 도구라
+`C:/SYA/tools/` 에 있다 — 어느 앱 폴더에서든 같은 명령으로 쓴다.
+
+```bash
+python C:/SYA/tools/wifi_adb.py          # USB 꽂고 한 번 → 무선 전환
+# USB 를 뽑는다. 이제 무선으로 install·screencap 다 된다
+python C:/SYA/tools/wifi_adb.py --status # 지금 무엇이 붙어 있나
+python C:/SYA/tools/wifi_adb.py --off    # 폰의 무선 포트를 닫는다
+```
+
+손으로 하면 이렇다:
+
+```bash
+adb -s <기기ID> shell ip -f inet addr show wlan0   # 주소 확인 (뽑기 전에)
+adb -s <기기ID> tcpip 5555          # ← USB 가 꽂혀 있을 때 한 번
+# USB 를 뽑는다
+adb connect 192.168.x.x:5555
+```
+
+- ⚠️ **폰을 껐다 켜면 풀린다.** 다시 켜려면 USB 를 또 한 번 꽂아야 한다.
+- ⚠️ **주소는 고정이 아니다.** 공유기가 다른 주소를 주면 `adb connect` 도 그 주소로.
+- 🚨 **켜 두면 같은 와이파이의 누구나 붙을 수 있다 — 인증이 없다.**
+  집 와이파이면 실질적 위험은 낮지만 **카페·공용 와이파이에서는 켜 두지 말 것.**
+  끄기: `wifi_adb.py --off`(같은 와이파이면 USB 없이도 닫힌다) 또는 폰 재부팅.
+  **밖에 있어 PC 를 못 쓰면 폰에서 «개발자 옵션 → USB 디버깅» 을 끄면 된다.**
+  ⚠️ `adb disconnect` 만으로는 **PC 쪽 연결만 끊기고 폰은 계속 열려 있다.**
+- **무선은 USB 보다 네 배쯤 느리다**(42MB APK 기준 USB 10초 · 무선 41초, 2026-09-09 실측).
+- USB 와 무선이 동시에 붙으면 기기가 **둘로 보인다.** `adb install` 이 «여러 기기»
+  라고 멈추므로 `-s` 로 하나를 지정하거나 한쪽을 끊는다.
+
+---
+
 ## 3-2. 앱 아이콘 (빠뜨리기 쉽다)
 
 ⚠ **안 하면 홈 화면에 Flutter 기본 파란 새가 뜬다.** `flutter create` 가 넣어 둔
 `ic_launcher.png` 를 밀도별로 덮어써야 한다.
 
 ```bash
+python tools/make_icons.py    # 먼저 아이콘부터 만든다
+
 python - <<'EOF'
 from PIL import Image
 src = Image.open('web/icons/icon-512.png').convert('RGBA')
@@ -88,6 +127,52 @@ for d, s in {'mdpi':48,'hdpi':72,'xhdpi':96,'xxhdpi':144,'xxxhdpi':192}.items():
         f'app/android/app/src/main/res/mipmap-{d}/ic_launcher.png')
 EOF
 ```
+
+### 🚨 여기서 끝내면 홈화면 아이콘이 이상하게 나온다 — **적응형 아이콘까지 해야 한다**
+
+위 5장만 넣으면 안드로이드 8 이상 런처가 그것을 «옛날식 아이콘» 으로 보고
+**흰 동그라미 위에 우리 크림 사각형을 축소해 얹는다.** 아이콘에 흰 테두리가 둘린
+것처럼 보인다(2026-09-09 에뮬레이터에서 실제로 그랬다. 나란히·학원비서는 적응형이라
+배경색이 동그라미를 끝까지 채운다).
+
+배경(단색)과 앞면(그림)을 나눠 주면 런처가 어떤 모양으로 잘라도 배경이 꽉 찬다.
+
+```bash
+RES=app/android/app/src/main/res
+mkdir -p $RES/mipmap-anydpi-v26 $RES/values
+
+python - <<'EOF'
+from PIL import Image
+src = Image.open('web/icons/icon-foreground-432.png').convert('RGBA')
+# 적응형 앞면 캔버스는 108dp — mdpi 108 / hdpi 162 / xhdpi 216 / xxhdpi 324 / xxxhdpi 432
+for d, s in {'mdpi':108,'hdpi':162,'xhdpi':216,'xxhdpi':324,'xxxhdpi':432}.items():
+    src.resize((s, s), Image.LANCZOS).save(
+        f'app/android/app/src/main/res/mipmap-{d}/ic_launcher_foreground.png')
+EOF
+
+cat > $RES/mipmap-anydpi-v26/ic_launcher.xml <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>
+XML
+
+cat > $RES/values/ic_launcher_background.xml <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#FFF3DA</color>
+</resources>
+XML
+```
+
+- 배경색 `#FFF3DA` 는 **`tools/make_icons.py` 의 `CREAM` 과 같은 값이어야 한다.**
+  한쪽만 바꾸면 스토어 아이콘과 홈화면 아이콘의 배경색이 갈린다.
+- 앞면은 `make_icons.py` 가 만들어 준다(`web/icons/icon-foreground-432.png`, 배경 없음).
+  **캔버스 108dp 중 실제로 보이는 것은 가운데 72dp 뿐**이라 그림을 0.69 배로 줄여 그려 뒀다.
+  이 여백을 무시하면 런처 모양에 따라 모서리가 잘린다.
+- 확인: 에뮬레이터에 깔고 **앱서랍까지 열어 눈으로 본다.** APK 안에 파일이 들어갔는지만
+  봐서는 이 문제를 못 잡는다 — 파일은 멀쩡했고 **런처가 그것을 어떻게 쓰느냐**가 문제였다.
 
 ---
 
