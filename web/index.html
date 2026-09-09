@@ -60,7 +60,8 @@ body{
 
 /* ---------- 메뉴 ---------- */
 #menu{padding:5vh 24px 24px;align-items:center;gap:22px;overflow-y:auto}
-.logo{font-family:var(--display);font-size:52px;letter-spacing:-2px}
+/* 두 글자뿐이라 붙이면 한 덩어리로 뭉쳐 보인다. 살짝 띄워 「쿵」「짝」이 각각 읽히게 한다. */
+.logo{font-family:var(--display);font-size:52px;letter-spacing:5px}
 .logo small{display:block;font-family:var(--body);font-size:13px;font-weight:400;
   letter-spacing:1px;opacity:.55;margin-top:6px}
 .gamelist{width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px}
@@ -80,7 +81,34 @@ body{
 }
 /* 랜덤 카드 — 게임 하나가 아니라 «고르지 않기» 라 목록과 살짝 떼어 놓는다.
    난이도 점이 없는 것도 일부러다(게임마다 달라서 하나로 못 적는다). */
-.gamecard.rand{box-shadow:0 2px 0 var(--mute), inset 0 0 0 2px var(--go)}
+/* 무지개빛이 한 바퀴 도는 테두리. «고르지 않기» 라는 것이 목록에서 바로 보여야 한다.
+   ⚠ 갤럭시 S8 웹뷰 72 에서도 돌아야 한다 — 그 버전에는 `inset` 단축 속성도
+   `@property` 도 없다. 그래서 top/right/bottom/left 를 따로 적고, 각도를
+   애니메이션하는 대신 요소 자체를 rotate 시킨다.
+   conic-gradient 를 못 읽는 브라우저에는 앞줄의 노란색이 그대로 남는다. */
+.gamecard.rand{position:relative;z-index:0;overflow:hidden;background:transparent}
+.gamecard.rand::before{
+  content:'';position:absolute;z-index:-2;
+  top:50%;left:50%;width:132%;height:0;padding-bottom:132%;
+  transform:translate(-50%,-50%);
+  background:var(--go);
+  background:conic-gradient(
+    #7FD1B9, #A8E6CF, #FFF7D6, #FFD166, #FF8FA3,
+    #F3C6F1, #D6A6E8, #9AC8F5, #CFF3E8, #FFFFFF 93%, #7FD1B9);
+  animation:randspin 4.5s linear infinite;
+}
+/* 가운데를 흰색으로 덮어 가장자리 3px 만 남긴다 = 테두리 */
+.gamecard.rand::after{
+  content:'';position:absolute;z-index:-1;
+  top:3px;right:3px;bottom:3px;left:3px;
+  border-radius:19px;background:#fff;
+}
+@keyframes randspin{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to  {transform:translate(-50%,-50%) rotate(360deg)}
+}
+/* 움직임을 줄여 달라고 설정한 사람에게는 돌리지 않는다 */
+@media (prefers-reduced-motion:reduce){.gamecard.rand::before{animation:none}}
 .gamecard.rand + .gamecard{margin-top:4px}
 /* 난이도는 게임 이름 옆에 붙인다. 오른쪽 끝에 두면 설명 줄의 폭을 뺏어
    "노란불이 켜지면 먼저 탭하세요" 가 두 줄로 넘어간다(360px 폰에서 확인). */

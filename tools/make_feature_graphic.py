@@ -80,11 +80,22 @@ def build():
         d.text(((x0 + 13 + 2 * r + 22) * S - l, cy * S - t - th * S / 2),
                name, font=f_name, fill=INK)
 
-    def center(txt, font, top, fill):
+    def center(txt, font, top, fill, track=0):
+        """track = 자간(px, S 곱하기 전). PIL 에는 자간 기능이 없어 글자를 하나씩 그린다."""
         l, t, rr, b = d.textbbox((0, 0), txt, font=font)
-        d.text(((W * S - (rr - l)) / 2 - l, top * S - t), txt, font=font, fill=fill)
+        if not track:
+            d.text(((W * S - (rr - l)) / 2 - l, top * S - t), txt, font=font, fill=fill)
+            return
+        gap = track * S
+        adv = [font.getlength(c) for c in txt]
+        x = (W * S - (sum(adv) + gap * (len(txt) - 1))) / 2
+        for c, a in zip(txt, adv):
+            d.text((x, top * S - t), c, font=font, fill=fill)
+            x += a + gap
 
-    center('쿵짝', ImageFont.truetype(jua, 180 * S), 48, INK)
+    # 자간은 웹 로고(.logo)와 같은 비율로 맞춘다 — 52px 에 2px ⇒ 180px 에 7px.
+    # 앱 안과 스토어 대문의 로고가 달라 보이면 안 된다.
+    center('쿵짝', ImageFont.truetype(jua, 180 * S), 48, INK, track=7)
     center('둘이서, 폰 하나로', ImageFont.truetype(g1b, 42 * S), 252, SUB)
 
     pill(300, 356, MINT, '쿵')
