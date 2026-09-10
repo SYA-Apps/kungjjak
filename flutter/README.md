@@ -300,7 +300,7 @@ USB 메모리나 종이에 적어 둔 복원 정보처럼 **PC 와 운명이 갈
 `예기치 않은 '-genkeypair' 토큰입니다` 오류가 난다(사랑나라에서 겪었다).
 
 ```powershell
-& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkeypair -v -keystore C:\Users\배이삭\kungjjak-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
+& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkeypair -v -keystore C:\SYA\keys\kungjjak-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
 ```
 
 **물어보는 것에 답하는 법** — 비밀번호는 화면에 안 보인다(별표도 안 나온다). 그냥 치고 엔터.
@@ -320,13 +320,21 @@ USB 메모리나 종이에 적어 둔 복원 정보처럼 **PC 와 운명이 갈
 Bash(깃배시)로 하겠다면 `&` 를 빼고 경로 표기를 바꾼다 — **대화식 창인 것은 마찬가지다**:
 
 ```bash
-"/c/Program Files/Android/Android Studio/jbr/bin/keytool.exe" -genkeypair -v   -keystore "$USERPROFILE/kungjjak-upload.jks"   -alias upload -keyalg RSA -keysize 2048 -validity 10000
+"/c/Program Files/Android/Android Studio/jbr/bin/keytool.exe" -genkeypair -v   -keystore "/c/SYA/keys/kungjjak-upload.jks"   -alias upload -keyalg RSA -keysize 2048 -validity 10000
 ```
 
 🚨 **개인 메일·본명을 넣지 않는다.** 서명서에 영구히 남고 지울 수 없다.
 여기 적는 값은 스토어에 공개되지 않으니 `SYA` 로 통일한다.
 
-**끝나면 `C:\Users\배이삭\kungjjak-upload.jks` 가 생긴다.**
+**끝나면 `C:\SYA\keys\kungjjak-upload.jks` 가 생긴다.**
+
+📌 **폴더가 없으면 keytool 이 그냥 실패한다** — 만들어 두고 시작할 것:
+`mkdir C:\SYA\keys` (이미 있으면 그냥 넘어간다).
+
+📌 **왜 `C:/SYA/keys/` 인가.** 홈 폴더(`C:\Users\<사용자>\`)를 쓰면 경로에 **윈도우 사용자명**이 들어가는데,
+이 저장소는 공개라 그게 그대로 드러난다(2026-09-10 점검에서 실제로 걸려 고쳤다).
+`app/` 안에 두는 것도 안 된다 — `flutter create` 로 다시 만드는 폴더라 키가 같이 날아간다.
+`C:/SYA/keys/` 는 **어느 git 저장소에도 속하지 않고** 사람 이름도 안 들어간다.
 
 ### 7-1-2. 🔑 백업 — **여기서 실패하면 앱이 죽는다**
 
@@ -351,7 +359,7 @@ cp flutter/key.properties.example app/android/key.properties
 storePassword=7-1 에서 정한 비밀번호
 keyPassword=같은 비밀번호
 keyAlias=upload
-storeFile=C:/Users/배이삭/kungjjak-upload.jks
+storeFile=C:/SYA/keys/kungjjak-upload.jks
 ```
 
 - 경로는 **슬래시(`/`)** 로 쓴다. 역슬래시는 이스케이프로 먹힌다.

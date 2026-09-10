@@ -16,4 +16,4 @@
 storePassword=여기에_정한_비밀번호
 keyPassword=여기에_같은_비밀번호
 keyAlias=upload
-storeFile=C:/Users/배이삭/kungjjak-upload.jks
+storeFile=C:/SYA/keys/kungjjak-upload.jks
