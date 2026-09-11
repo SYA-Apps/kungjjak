@@ -300,8 +300,15 @@ USB 메모리나 종이에 적어 둔 복원 정보처럼 **PC 와 운명이 갈
 `예기치 않은 '-genkeypair' 토큰입니다` 오류가 난다(사랑나라에서 겪었다).
 
 ```powershell
-& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkeypair -v -keystore C:\SYA\keys\kungjjak-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
+& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkeypair -v -keystore C:\SYA\keys\kungjjak-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=SYA, O=SYA, C=KR"
 ```
+
+✅ **2026-09-11 이 명령으로 만들었다.** 지문(SHA-256)
+`C8:DA:CA:5B:8F:39:35:8E:5E:AC:CC:A1:D4:CE:AB:E5:EC:3F:FF:DF:D5:ED:83:2C:AC:B3:76:DE:DE:22:55:CF`
+
+📌 **`-dname` 을 붙이면 비밀번호만 묻는다.** 이름·조직·나라를 하나씩 묻는 여덟 질문이 사라져
+실수로 본명을 넣을 틈이 없다(서명서에 한 번 들어가면 못 지운다). 아래 표는 `-dname` 을
+빼고 돌렸을 때만 필요하다.
 
 **물어보는 것에 답하는 법** — 비밀번호는 화면에 안 보인다(별표도 안 나온다). 그냥 치고 엔터.
 
@@ -320,7 +327,7 @@ USB 메모리나 종이에 적어 둔 복원 정보처럼 **PC 와 운명이 갈
 Bash(깃배시)로 하겠다면 `&` 를 빼고 경로 표기를 바꾼다 — **대화식 창인 것은 마찬가지다**:
 
 ```bash
-"/c/Program Files/Android/Android Studio/jbr/bin/keytool.exe" -genkeypair -v   -keystore "/c/SYA/keys/kungjjak-upload.jks"   -alias upload -keyalg RSA -keysize 2048 -validity 10000
+"/c/Program Files/Android/Android Studio/jbr/bin/keytool.exe" -genkeypair -v   -keystore "/c/SYA/keys/kungjjak-upload.jks"   -alias upload -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=SYA, O=SYA, C=KR"
 ```
 
 🚨 **개인 메일·본명을 넣지 않는다.** 서명서에 영구히 남고 지울 수 없다.
