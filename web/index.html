@@ -213,14 +213,17 @@ body{
 #arena.shared .half[data-locked="1"]{opacity:.38}
 
 /* 원판 카드 — 그림 위치와 각도를 무작위로 흩어 어느 쪽에서 봐도 공평하게 */
+/* 지름은 게임이 판을 재서 --disc 로 넣는다(같은 그림 찾기의 fit). min(80vw,33vh) 는 재기 전 기본값.
+   flex:none — 판이 모자랄 때 flex 가 높이만 줄여 타원이 되지 않게(2026-09-12 아이폰에서 찌그러졌다) */
 .dcard{
-  position:relative;width:min(80vw,33vh);height:min(80vw,33vh);
+  position:relative;flex:none;
+  width:var(--disc,min(80vw,33vh));height:var(--disc,min(80vw,33vh));
   background:#fff;border-radius:50%;box-shadow:0 3px 0 var(--mute);
 }
 .sym{
   position:absolute;left:var(--x);top:var(--y);
   transform:translate(-50%,-50%) rotate(var(--r)) scale(var(--s));
-  width:9vmin;height:9vmin;
+  width:15%;height:15%;       /* 원판을 따라 줄어든다 — vmin 이면 원판만 작아져 그림끼리 겹친다 */
   background:none;border:none;padding:0;cursor:pointer;
 }
 .sym svg{width:100%;height:100%;display:block}
@@ -1115,7 +1118,7 @@ GAMES.trio = {
    이모지는 기기마다 모양이 달라 톤이 깨지므로 쓰지 않는다. */
 const ICON = [
   /* 0 사과 */`<circle cx="24" cy="27" r="15" fill="#EF7A85"/><path d="M24 12v-4" stroke="#A9784F" stroke-width="3.4" stroke-linecap="round"/><path d="M25 10c4-4 10-3 10-3s0 7-6 7c-3 0-4-2-4-4z" fill="#7BC47F"/>`,
-  /* 1 바나나 */`<path d="M11 13c0 13 9 24 23 24 3 0 5-1 5-3.5 0-1.6-1.3-2.5-3-2.5-11 0-19-9-19-18 0-2-1.3-3.2-3-3.2S11 11 11 13z" fill="#F2C14E"/>`,
+  /* 1 바나나 — 꼭지·끝 꼭지·등줄기를 넣어 초승달과 가른다(2026-09-12 테스터: 둘이 너무 비슷하다) */`<path d="M14 11l.6-6.5" stroke="#A9784F" stroke-width="4.2" stroke-linecap="round"/><path d="M11 13c0 13 9 24 23 24 3 0 5-1 5-3.5 0-1.6-1.3-2.5-3-2.5-11 0-19-9-19-18 0-2-1.3-3.2-3-3.2S11 11 11 13z" fill="#F2C14E"/><path d="M14.5 14c0 10 7.5 19.5 19.5 20.5" stroke="#D9A33A" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="38.2" cy="34.4" r="2.3" fill="#6B4B32"/>`,
   /* 2 딸기 */`<path d="M24 42c-8-4-12-11-12-17 0-5 5-8 12-8s12 3 12 8c0 6-4 13-12 17z" fill="#EF7A85"/><path d="M15 15h18l-5 5h-8z" fill="#7BC47F"/><g fill="#F7E9B0"><circle cx="20" cy="27" r="1.6"/><circle cx="28" cy="27" r="1.6"/><circle cx="24" cy="33" r="1.6"/></g>`,
   /* 3 포도 */`<path d="M24 13V7" stroke="#7BC47F" stroke-width="3.4" stroke-linecap="round"/><g fill="#8B7DE8"><circle cx="24" cy="19" r="6"/><circle cx="16" cy="27" r="6"/><circle cx="32" cy="27" r="6"/><circle cx="24" cy="35" r="6"/></g>`,
   /* 4 잎 */`<path d="M9 39C9 21 23 7 39 7c0 17-13 32-30 32z" fill="#7BC47F"/><path d="M12 36L33 15" stroke="#4E9455" stroke-width="2.8" stroke-linecap="round"/>`,
@@ -1131,7 +1134,7 @@ const ICON = [
   /* 14 개구리 */`<circle cx="14" cy="15" r="6.5" fill="#7BC47F"/><circle cx="34" cy="15" r="6.5" fill="#7BC47F"/><circle cx="14" cy="15" r="2.5" fill="#2E2B3A"/><circle cx="34" cy="15" r="2.5" fill="#2E2B3A"/><ellipse cx="24" cy="30" rx="15" ry="12" fill="#7BC47F"/><path d="M17 31q7 6 14 0" stroke="#2E2B3A" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
   /* 15 문어 */`<g fill="#FF8FA3"><circle cx="11" cy="37" r="4.2"/><circle cx="20" cy="39" r="4.2"/><circle cx="28" cy="39" r="4.2"/><circle cx="37" cy="37" r="4.2"/></g><path d="M9 30a15 15 0 0130 0v6H9z" fill="#FF8FA3"/><circle cx="19" cy="26" r="2.3" fill="#2E2B3A"/><circle cx="29" cy="26" r="2.3" fill="#2E2B3A"/>`,
   /* 16 해 */`<g stroke="#F2C14E" stroke-width="4.2" stroke-linecap="round"><path d="M24 3v6M24 39v6M3 24h6M39 24h6M9 9l4 4M35 35l4 4M39 9l-4 4M13 35l-4 4"/></g><circle cx="24" cy="24" r="11" fill="#F2C14E"/>`,
-  /* 17 달 */`<path d="M28 7a17 17 0 100 34 21 21 0 010-34z" fill="#F2C14E"/>`,
+  /* 17 달 — 분화구 둘. 바나나와 헷갈리지 않게 */`<path d="M28 7a17 17 0 100 34 21 21 0 010-34z" fill="#F2C14E"/><circle cx="15.6" cy="20" r="1.8" fill="#D9A33A"/><circle cx="15.6" cy="29" r="2.4" fill="#D9A33A"/>`,
   /* 18 별 */`<path d="M24 5l5.8 12.1 13.2 1.9-9.5 9.3 2.2 13.1L24 35.2 12.3 41.4l2.2-13.1L5 19l13.2-1.9z" fill="#F2C14E"/>`,
   /* 19 구름 */`<g fill="#AFC7E8"><circle cx="17" cy="28" r="8"/><circle cx="27" cy="23" r="10"/><circle cx="36" cy="29" r="7"/><rect x="15" y="28" width="23" height="8" rx="4"/></g>`,
   /* 20 비 */`<g fill="#AFC7E8"><circle cx="18" cy="19" r="8"/><circle cx="28" cy="17" r="9"/><rect x="13" y="19" width="24" height="7" rx="3.5"/></g><g stroke="#4B8BE8" stroke-width="4" stroke-linecap="round"><path d="M17 32v5M25 32v7M33 32v5"/></g>`,
@@ -1293,6 +1296,20 @@ GAMES.match = {
     };
     boardEl.addEventListener('pointerdown', onBoard);
 
+    /* 원판 지름은 판의 실제 크기를 재서 정한다. CSS 의 min(80vw,33vh) 만 믿던 때,
+       아이폰 사파리처럼 vh 가 실제로 보이는 화면보다 크면 두 장이 판에 안 들어가
+       원판이 타원으로 찌그러졌다(2026-09-12 테스터). 판 높이는 위아래 띠의 문구
+       (초읽기·정답 표시)에 따라 바뀌므로 크기가 바뀔 때마다 다시 잰다. */
+    function fit(){
+      const cs = getComputedStyle(boardEl);
+      const w = boardEl.clientWidth  - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const h = boardEl.clientHeight - parseFloat(cs.paddingTop)  - parseFloat(cs.paddingBottom);
+      const d = Math.floor(Math.min(w * 0.8, (h - 10) / 2));
+      if (d > 0) boardEl.style.setProperty('--disc', d + 'px');
+    }
+    const ro = window.ResizeObserver ? new ResizeObserver(fit) : null;
+    if (ro) ro.observe(boardEl); else window.addEventListener('resize', fit);
+
     const handlers = {};
     ['A','B'].forEach(p => {
       handlers[p] = e => { e.preventDefault(); claim(p); };
@@ -1302,10 +1319,13 @@ GAMES.match = {
     cards = buildCards(5);
     deal();
     open();
+    fit();
 
     return function stop(){
       clearInterval(tick);
       timers.forEach(clearTimeout); timers = [];
+      if (ro) ro.disconnect(); else window.removeEventListener('resize', fit);
+      boardEl.style.removeProperty('--disc');
       boardEl.removeEventListener('pointerdown', onBoard);
       ['A','B'].forEach(p => {
         ctx.half(p).removeEventListener('pointerdown', handlers[p]);
