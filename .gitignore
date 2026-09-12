@@ -29,6 +29,9 @@ key.properties
 # 글꼴 원본 캐시 (embed_fonts.py 가 다시 받는다)
 tools/.fontcache/
 
+# SYA 공통 점검 전달 파일 (ADMIN 세션이 쓴다 · 공개 저장소에 안 올린다)
+_SYA-전달사항.md
+
 # 파이썬 캐시
 __pycache__/
 *.pyc
