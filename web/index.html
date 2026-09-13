@@ -207,7 +207,9 @@ body{
 /* 높이를 고정하지 않는다 — 88px 고정이던 때 내용(133px)이 넘쳐
    위아래로 삐져나와 공용 판을 침범하고 캐릭터가 잘렸다(S8 실기기에서 확인). */
 #arena.shared .half{flex:none;gap:6px;padding:8px 0}
-#arena.shared .ms:empty{display:none}   /* 빈 보조정보가 18px 을 먹지 않게 */
+/* 보조정보 줄은 비어 있어도 자리를 지킨다. 비면 없애던 때(18px 아끼려고) 초읽기·정답 줄이
+   생겼다 없어질 때마다 판 높이가 바뀌어, 누를 때마다 원판이 커졌다 작아졌다 했다(2026-09-12 아이폰). */
+#arena.shared .ms{height:22px;line-height:22px}
 #arena.shared .face{width:52px;height:52px}
 #arena.shared .caption{font-size:18px}
 #arena.shared .half[data-locked="1"]{opacity:.38}
