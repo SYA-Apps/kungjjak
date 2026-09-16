@@ -40,7 +40,11 @@
 | 로컬 폴더 | `Two-player` |
 | GitHub 저장소 | `SYA-Apps/kungjjak` (공개) — 기본 브랜치 `master` |
 | 웹 주소 | **https://sya-apps.github.io/kungjjak/** (2026-09-02 배포) |
-| 안드로이드 `applicationId` | `com.syaapps.kungjjak` — **출시 후 영구 고정, 절대 바꿀 수 없다** |
+| 안드로이드 `applicationId` | `com.syaapps.kungjjak` — **콘솔에 앱을 만든 뒤라 영원히 못 바꾼다** |
+
+📦 **새 공통 규칙은 `com.sya.<앱>` 인데 쿵짝은 예외로 남는다**(2026-09-16 사용자 «그대로 두기»).
+바꾸려면 새 앱을 만들어 AAB·서명키·등록정보·답안·심사를 처음부터 다시 하고 검토 중인 제출을 버려야 한다.
+**`applicationId` 를 고치지 말 것.** 콘솔 대시보드의 `com.syaapps.kungjjak (unreviewed)` 는 검토가 끝나면 사라지는 임시 이름이다.
 
 로마자 표기는 `kungjjak` 이 맞다(ㅉ = `jj`). `kungjak` 은 "쿵작"이 된다.
 
