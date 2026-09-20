@@ -222,6 +222,18 @@ fs.writeFileSync(process.env.TMP + '/chk.js', s.split('<script>')[1].split('</sc
 " && node --check "$TMP/chk.js" && echo OK
 ```
 
+**웹에 뭔가 새로 넣었으면 «밖에서 받아오는 게 생겼나» 를 본다.**
+쿵짝은 «INTERNET 권한 없음 · 저장 없음» 이 스토어 답안(데이터 보안·등급·방침)의 뼈대라,
+그 전제가 깨지는 순간 콘솔 답안과 스토어 설명이 한꺼번에 따라 움직인다(2026-09-20 ADMIN 확인).
+
+```bash
+grep -nE '<(script|link|img|audio|video|source|iframe)[^>]*(src|href)=|fetch\(|XMLHttpRequest|new Audio|@import|url\(https?:' web/index.html | grep -v 'data:'
+```
+
+나와도 되는 것은 **저장소 안 파일**(`./manifest.json` · `./icons/…`)뿐이다.
+`og:image`·`og:url` 메타 두 줄은 카톡·검색이 긁어갈 때만 쓰는 값이라 실행 중에 부르지 않는다.
+📌 소리도 **코드로 만든다**(`Sound`·`Music`) — 오디오 파일을 받아오지 않으니 이 전제가 저절로 지켜진다.
+
 게임 규칙을 바꿨다면 수학적 검증도 다시 돌린다.
 - 삼총사: 81장 덱의 정답 조합이 **1,080개**
 - 같은 그림 찾기: 카드 31장, 모든 쌍(465가지)에서 겹치는 그림이 **정확히 1개**
