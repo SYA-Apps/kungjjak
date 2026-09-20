@@ -621,13 +621,15 @@ const Music = (() => {
   function cycle(t0){
     BARS.forEach((ch, bar) => {
       const b = t0 + bar * 4 * BEAT;
-      voice(hz(BASS[ch]), b,            BEAT * .55, .075, 'triangle');   // 쿵
-      voice(hz(BASS[ch]), b + 2 * BEAT, BEAT * .55, .075, 'triangle');   // 쿵
+      voice(hz(BASS[ch]), b,            BEAT * .55, .15, 'triangle');    // 쿵
+      voice(hz(BASS[ch]), b + 2 * BEAT, BEAT * .55, .15, 'triangle');    // 쿵
       [1, 3].forEach(beat => CHORD[ch].forEach(n =>                      // 짝
-        voice(hz(n), b + beat * BEAT, BEAT * .28, .022, 'square')));
+        voice(hz(n), b + beat * BEAT, BEAT * .28, .05, 'square')));
     });
+    /* 가락이 제일 잘 들려야 한다. 그래도 정답·오답 소리(.20)보다는 작게 둔다 —
+       게임 소리를 덮으면 안 된다(2026-09-20 «너무 작다» 는 의견으로 두 배 키웠다). */
     MEL.forEach(([n, at, len]) =>
-      voice(hz(n), t0 + at * BEAT, len * BEAT * .92, .055, 'triangle'));
+      voice(hz(n), t0 + at * BEAT, len * BEAT * .92, .12, 'triangle'));
   }
 
   function push(){
