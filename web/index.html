@@ -109,9 +109,23 @@ body{
   92% {transform:translateX(-3px) rotate(-1deg)}
   100%{transform:none}
 }
+/* 박는 순간 첫 화면 전체가 짧게 떨린다(0.36초). 점점 작아지며 제자리로 돌아온다.
+   ⚠ 끝난 뒤 transform 이 남으면 안 된다 — 남으면 그 안의 position:fixed(음악 단추)가
+     화면이 아니라 이 상자를 기준으로 삼는다. 그래서 채우기(fill)를 쓰지 않는다. */
+@keyframes hit{
+  0%  {transform:translate(0,0)}
+  12% {transform:translate(-7px,3px)}
+  26% {transform:translate(6px,-3px)}
+  40% {transform:translate(-5px,2px)}
+  56% {transform:translate(4px,-2px)}
+  72% {transform:translate(-2px,1px)}
+  86% {transform:translate(1px,0)}
+  100%{transform:translate(0,0)}
+}
+#menu.hit{animation:hit .36s ease-out}
 /* 움직임을 줄여 달라고 설정한 사람에게는 그냥 제자리에 둔다 */
 @media (prefers-reduced-motion:reduce){
-  .logo.play .ku,.logo.play .jjak{animation:none}
+  .logo.play .ku,.logo.play .jjak,#menu.hit{animation:none}
 }
 /* 배경음악 끄고 켜기 — 첫 화면 오른쪽 위. 메뉴가 길어 스크롤해도 늘 같은 자리에 있게 fixed. */
 .musicbtn{
@@ -869,7 +883,14 @@ function flyLogo(){
   void lg.offsetWidth;
   lg.classList.add('play');
   clearTimeout(logoTimer);
-  logoTimer = setTimeout(() => Music.bump(), 1120);  // 70% 지점(1.6초 중) — 박는 순간
+  logoTimer = setTimeout(() => {                     // 70% 지점(1.6초 중) — 박는 순간
+    Music.bump();
+    const m = el('#menu');
+    m.classList.remove('hit');
+    void m.offsetWidth;                              // 한 번 그려 줘야 다시 돈다
+    m.classList.add('hit');
+    setTimeout(() => m.classList.remove('hit'), 420);
+  }, 1120);
 }
 
 function startGame(key, keepScore){
