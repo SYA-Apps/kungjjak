@@ -71,11 +71,40 @@ body{
 .screen.on{display:flex}
 
 /* ---------- 메뉴 ---------- */
-#menu{padding:5vh 24px 24px;align-items:center;gap:22px;overflow-y:auto}
+/* overflow-x:hidden — 로고가 화면 밖에서 날아오므로 잠그지 않으면 첫 화면이 옆으로 밀린다 */
+#menu{padding:5vh 24px 24px;align-items:center;gap:22px;overflow-y:auto;overflow-x:hidden}
 /* 두 글자뿐이라 붙이면 한 덩어리로 뭉쳐 보인다. 살짝 띄워 「쿵」「짝」이 각각 읽히게 한다. */
 .logo{font-family:var(--display);font-size:52px;letter-spacing:5px}
 .logo small{display:block;font-family:var(--body);font-size:13px;font-weight:400;
   letter-spacing:1px;opacity:.55;margin-top:6px}
+/* 「쿵」은 왼쪽, 「짝」은 오른쪽에서 날아와 가운데서 부딪힌다(60% 지점).
+   부딪히는 순간 살짝 찌그러졌다가 서로 튕겨 몇 번 흔들리고 멈춘다.
+   ⚠ 애니메이션은 transform 만 쓴다 — 글자 위치를 바꾸면 매 프레임 글꼴을 다시 그려 폰에서 끊긴다. */
+.logo .ku,.logo .jjak{display:inline-block;will-change:transform}
+.logo.play .ku{animation:flyL .9s cubic-bezier(.2,.7,.3,1) both}
+.logo.play .jjak{animation:flyR .9s cubic-bezier(.2,.7,.3,1) both}
+@keyframes flyL{
+  0%  {transform:translateX(-62vw) rotate(-14deg);opacity:0}
+  12% {opacity:1}
+  60% {transform:translateX(10px) rotate(7deg) scale(1.1,.9)}
+  70% {transform:translateX(-7px) rotate(-4deg) scale(.96,1.04)}
+  80% {transform:translateX(4px) rotate(2deg)}
+  90% {transform:translateX(-2px) rotate(-1deg)}
+  100%{transform:none}
+}
+@keyframes flyR{
+  0%  {transform:translateX(62vw) rotate(14deg);opacity:0}
+  12% {opacity:1}
+  60% {transform:translateX(-10px) rotate(-7deg) scale(1.1,.9)}
+  70% {transform:translateX(7px) rotate(4deg) scale(.96,1.04)}
+  80% {transform:translateX(-4px) rotate(-2deg)}
+  90% {transform:translateX(2px) rotate(1deg)}
+  100%{transform:none}
+}
+/* 움직임을 줄여 달라고 설정한 사람에게는 그냥 제자리에 둔다 */
+@media (prefers-reduced-motion:reduce){
+  .logo.play .ku,.logo.play .jjak{animation:none}
+}
 /* 배경음악 끄고 켜기 — 첫 화면 오른쪽 위. 메뉴가 길어 스크롤해도 늘 같은 자리에 있게 fixed. */
 .musicbtn{
   position:fixed;top:14px;right:14px;z-index:5;
@@ -427,7 +456,7 @@ body{
 
   <!-- 메뉴 -->
   <section class="screen on" id="menu">
-    <h1 class="logo">쿵짝<small>둘이서, 폰 하나로</small></h1>
+    <h1 class="logo" id="logo"><span class="ku">쿵</span><span class="jjak">짝</span><small>둘이서, 폰 하나로</small></h1>
     <button class="musicbtn" id="musicBtn" type="button" aria-pressed="true" aria-label="배경음악 끄기">
       <svg viewBox="0 0 32 32" aria-hidden="true">
         <path d="M7 12.6h4.4L17.2 8v16l-5.8-4.6H7z" fill="#2E2B3A"/>
@@ -671,6 +700,16 @@ const Music = (() => {
     isOn(){ return on; },
     start: begin,
     stop: end,
+    /* 로고가 부딪히는 순간 — 낮은 «쿵» 과 짧은 «짝» 을 겹쳐 한 방 */
+    bump(){
+      if (!on) return;
+      ac = ac || Sound.ctx();
+      if (!ac || ac.state !== 'running') return;   // 아직 안 깨운 오디오면 조용히 넘어간다
+      const t = ac.currentTime;
+      voice(hz('C2'), t,       .30, .22, 'triangle');
+      voice(hz('G4'), t + .02, .12, .05, 'square');
+      voice(3200,     t + .02, .05, .03, 'square');
+    },
     toggle(){
       on = !on;
       if (on) begin(); else end();
@@ -810,7 +849,19 @@ function startRandom(){
 
 function show(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
-  if (id === 'menu') Music.start(); else Music.stop();   // 배경음악은 첫 화면에서만
+  if (id === 'menu'){ Music.start(); flyLogo(); } else Music.stop();   // 배경음악·로고는 첫 화면에서만
+}
+
+/* 로고를 다시 날려 보낸다. 클래스를 뗐다 붙이는 사이에 한 번 그려 줘야(offsetWidth)
+   브라우저가 «같은 애니메이션» 으로 보지 않고 처음부터 다시 돌린다. */
+let logoTimer = 0;
+function flyLogo(){
+  const lg = el('#logo'); if (!lg) return;
+  lg.classList.remove('play');
+  void lg.offsetWidth;
+  lg.classList.add('play');
+  clearTimeout(logoTimer);
+  logoTimer = setTimeout(() => Music.bump(), 540);   // 60% 지점 — 부딪히는 순간
 }
 
 function startGame(key, keepScore){
@@ -2152,6 +2203,7 @@ GAMES.land = {
                          `<span>${face('calm', HEX.B)}짝</span>`;
 
   setWin(winScore);
+  flyLogo();                     // 앱을 켠 첫 화면에서도 한 번 날아온다
 
   el('#again').addEventListener('click', () => startGame(
     Object.keys(GAMES).find(k => GAMES[k] === current)
