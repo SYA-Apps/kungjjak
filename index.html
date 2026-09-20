@@ -77,28 +77,36 @@ body{
 .logo{font-family:var(--display);font-size:52px;letter-spacing:5px}
 .logo small{display:block;font-family:var(--body);font-size:13px;font-weight:400;
   letter-spacing:1px;opacity:.55;margin-top:6px}
-/* 「쿵」은 왼쪽, 「짝」은 오른쪽에서 날아와 가운데서 부딪힌다(60% 지점).
-   부딪히는 순간 살짝 찌그러졌다가 서로 튕겨 몇 번 흔들리고 멈춘다.
+/* 「쿵」은 왼쪽, 「짝」은 오른쪽에서 **굴러와서** 가운데서 쿵 박는다(70% 지점, 1.6초).
+   구르는 느낌은 «움직인 거리만큼 돌린다» 로 낸다 — 오른쪽으로 가면 시계 방향(+),
+   왼쪽으로 가면 반시계 방향(−)으로 한 바퀴 반. 속도는 일정하게(linear) 두다가
+   가운데서 딱 멈춰야 «박았다» 로 읽힌다. 감속하면 스르르 서서 맥이 빠진다.
    ⚠ 애니메이션은 transform 만 쓴다 — 글자 위치를 바꾸면 매 프레임 글꼴을 다시 그려 폰에서 끊긴다. */
 .logo .ku,.logo .jjak{display:inline-block;will-change:transform}
-.logo.play .ku{animation:flyL .9s cubic-bezier(.2,.7,.3,1) both}
-.logo.play .jjak{animation:flyR .9s cubic-bezier(.2,.7,.3,1) both}
-@keyframes flyL{
-  0%  {transform:translateX(-62vw) rotate(-14deg);opacity:0}
-  12% {opacity:1}
-  60% {transform:translateX(10px) rotate(7deg) scale(1.1,.9)}
-  70% {transform:translateX(-7px) rotate(-4deg) scale(.96,1.04)}
-  80% {transform:translateX(4px) rotate(2deg)}
-  90% {transform:translateX(-2px) rotate(-1deg)}
+.logo.play .ku{animation:rollL 1.6s linear both}
+.logo.play .jjak{animation:rollR 1.6s linear both}
+@keyframes rollL{
+  0%  {transform:translateX(-62vw) rotate(-540deg);opacity:0}
+  8%  {opacity:1}
+  20% {transform:translateX(-46vw) rotate(-400deg)}
+  40% {transform:translateX(-30vw) rotate(-262deg)}
+  55% {transform:translateX(-16vw) rotate(-140deg)}
+  70% {transform:translateX(0) rotate(0)}                      /* 쿵! */
+  76% {transform:translateX(9px) rotate(6deg) scale(1.1,.9)}
+  84% {transform:translateX(-5px) rotate(-3deg) scale(.97,1.03)}
+  92% {transform:translateX(3px) rotate(1deg)}
   100%{transform:none}
 }
-@keyframes flyR{
-  0%  {transform:translateX(62vw) rotate(14deg);opacity:0}
-  12% {opacity:1}
-  60% {transform:translateX(-10px) rotate(-7deg) scale(1.1,.9)}
-  70% {transform:translateX(7px) rotate(4deg) scale(.96,1.04)}
-  80% {transform:translateX(-4px) rotate(-2deg)}
-  90% {transform:translateX(2px) rotate(1deg)}
+@keyframes rollR{
+  0%  {transform:translateX(62vw) rotate(540deg);opacity:0}
+  8%  {opacity:1}
+  20% {transform:translateX(46vw) rotate(400deg)}
+  40% {transform:translateX(30vw) rotate(262deg)}
+  55% {transform:translateX(16vw) rotate(140deg)}
+  70% {transform:translateX(0) rotate(0)}                      /* 짝! */
+  76% {transform:translateX(-9px) rotate(-6deg) scale(1.1,.9)}
+  84% {transform:translateX(5px) rotate(3deg) scale(.97,1.03)}
+  92% {transform:translateX(-3px) rotate(-1deg)}
   100%{transform:none}
 }
 /* 움직임을 줄여 달라고 설정한 사람에게는 그냥 제자리에 둔다 */
@@ -615,7 +623,7 @@ const Music = (() => {
   const STEP = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
   const hz = n => 440 * Math.pow(2, (STEP[n[0]] + (+n.slice(1) + 1) * 12 - 69) / 12);
 
-  const TEMPO = 132, BEAT = 60 / TEMPO, LOOP = 32;      // 8마디 × 4박 (9/20 «더 경쾌하게» — 116→132)
+  const TEMPO = 120, BEAT = 60 / TEMPO, LOOP = 32;      // 8마디 × 4박 (9/20 116→132 «경쾌하게» → 120 «조금 천천히»)
   const BARS  = ['C','G','C','G','F','C','G','C'];      // 마디마다 화음
   const BASS  = { C:'C2', F:'F2', G:'G2' };             // 쿵 — 1·3박
   const CHORD = { C:['C4','E4','G4'], F:['C4','F4','A4'], G:['B3','D4','G4'] };  // 짝 — 2·4박
@@ -861,7 +869,7 @@ function flyLogo(){
   void lg.offsetWidth;
   lg.classList.add('play');
   clearTimeout(logoTimer);
-  logoTimer = setTimeout(() => Music.bump(), 540);   // 60% 지점 — 부딪히는 순간
+  logoTimer = setTimeout(() => Music.bump(), 1120);  // 70% 지점(1.6초 중) — 박는 순간
 }
 
 function startGame(key, keepScore){
