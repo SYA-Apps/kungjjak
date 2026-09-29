@@ -51,12 +51,30 @@ class GameView extends StatefulWidget {
   State<GameView> createState() => _GameViewState();
 }
 
-class _GameViewState extends State<GameView> {
+class _GameViewState extends State<GameView> with WidgetsBindingObserver {
   late final WebViewController _web;
+
+  // 앱을 내리거나 다른 앱으로 넘어가면 음악을 끈다(2026-09-30).
+  // 안드로이드 웹뷰는 앱이 뒤로 가도 페이지의 visibilitychange 를 안 주는 판이 있어
+  // 페이지 쪽 kjPause/kjResume 을 여기서 직접 부른다.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final js = state == AppLifecycleState.resumed
+        ? 'window.kjResume && kjResume()'
+        : 'window.kjPause && kjPause()';
+    _web.runJavaScript(js).catchError((_) {});
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _web = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(kBg)
