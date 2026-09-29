@@ -2443,31 +2443,11 @@ GAMES.land = {
       WAKE_EV.forEach(ev => document.removeEventListener(ev, wake, true));
   };
   WAKE_EV.forEach(ev => document.addEventListener(ev, wake, true));
-  /* 화면을 닫거나 다른 앱으로 넘어가면 음악을 끈다(2026-09-30 사용자 «화면을 닫았을 때나 전환했을 때 꺼져야»).
-     그전에는 앞으로 1.6초치 예약된 음과 오디오 장치가 그대로 살아 있어 뒤에서 계속 울렸다.
-     → 곡을 멈춘다(예약해 둔 음까지 end() 가 끊는다).
-     돌아오면 지금 화면(첫 화면·대결)에 맞는 곡을 다시 건다. 아이폰은 돌아온 뒤 한 번 눌러야
-     깨워 주는 판이 있어 깨우기 손잡이도 다시 걸어 둔다.
-     안드로이드 앱(웹뷰)은 이 이벤트가 안 오는 판이 있어 Flutter 가 kjPause/kjResume 을 직접 부른다 */
-  let paused = false;
-  window.kjPause = () => {
-    if (paused) return; paused = true;
-    Music.stop();
-    /* ⚠ 오디오 장치를 직접 재우지(suspend) 않는다 — 그렇게 했더니 돌아와도 폰이 다시 안 깨워 줘서
-       음악이 영영 안 나왔다(2026-09-30). 곡만 멈추면 예약된 음까지 end() 가 다 끊는다 */
-  };
-  window.kjResume = () => {
-    if (!paused) return; paused = false;
-    const c = Sound.ctx(); if (!c) return;
-    if (c.state !== 'running'){                        // 폰이 스스로 멈춰 뒀으면(아이폰 «interrupted») 다음 탭에 깨운다
-      try { c.resume(); } catch(_){}
-      WAKE_EV.forEach(ev => document.addEventListener(ev, wake, true));
-    }
-    const m = onScreen(); if (m) Music.start(m);       // 아직 잠들어 있으면 깨어나길 기다렸다 시작한다
-  };
-  document.addEventListener('visibilitychange', () => document.hidden ? kjPause() : kjResume());
-  window.addEventListener('pagehide', () => kjPause());
-  window.addEventListener('pageshow', e => { if (e.persisted) kjResume(); });
+  /* 다른 앱에 갔다 오면 아이폰이 오디오를 «interrupted» 로 멈춰 둔다 → 돌아오면 다시 깨운다 */
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    const c = Sound.ctx(); if (c && c.state !== 'running') WAKE_EV.forEach(ev => document.addEventListener(ev, wake, true));
+  });
 
   /* 게임 중 나가기 — 0.7초 눌러야 열린다.
      반쪽 전체가 버저라 짧은 탭으로 나가면 실수로 대결이 날아간다.

@@ -1,6 +1,6 @@
 /* 쿵짝 서비스워커 — 오프라인 지원.
    게임 파일을 바꾸면 CACHE 버전을 올려야 새 파일이 적용된다. */
-const CACHE = 'kungjjak-v42';  /* 돌아오면 음악이 다시 나오게 */
+const CACHE = 'kungjjak-v43';  /* 화면 닫을 때 음악 끄기를 되돌림 */
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',
