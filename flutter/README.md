@@ -208,6 +208,17 @@ cd app && flutter pub get
 <application android:label="쿵짝" ... >
 ```
 
+### 세로 고정 (2026-09-29 사용자 «쿵짝은 세로모드만»)
+`main.dart` 의 `setPreferredOrientations` 는 **Flutter 가 뜬 뒤에야** 먹는다. 매니페스트에도 박아
+처음 뜨는 순간부터 세로로 둔다. 같은 파일 `<activity` 안에:
+
+```xml
+android:screenOrientation="portrait"
+```
+
+⚠️ 안드로이드 16 부터 **태블릿·폴더블 펼친 화면(짧은 변 600dp 이상)** 에서는 이 고정을 시스템이 무시한다.
+폰에서는 그대로 먹는다. 웹은 방향을 못 묶어서 `index.html` 의 `#rotate` 안내판이 대신 맡는다.
+
 ### 화면 꺼짐 방지 (중요)
 대결 도중 화면이 꺼지면 안 된다.
 `app/android/app/src/main/kotlin/.../MainActivity.kt`
