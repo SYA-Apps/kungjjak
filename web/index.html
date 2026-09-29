@@ -650,13 +650,14 @@ const Sound = (() => {
   }
   return {
     /* 🍎 아이폰 사파리 (2026-09-29 «아이폰 웹에서 음악 소리가 안 들려»)
-       ① 소리 끔 스위치(벨소리 무음)를 켜 두면 웹오디오가 통째로 조용해진다 →
-          audioSession 을 'playback' 으로 두면 게임·음악 앱처럼 들린다(iOS 17+)
+       ① 무음 스위치는 **따른다**(사용자 1-2) — 대부분의 게임 앱과 같다. 'ambient' 로 두면
+          무음일 때 조용하고, 다른 앱 음악을 멈추지 않고 같이 나온다(iOS 17+).
+          'playback' 으로 두면 무음을 넘어 들리지만 다른 앱 음악을 끊는다 — 그래서 안 쓴다
        ② 손가락이 닿는 순간(pointerdown)만으로는 오디오가 안 깨어나는 판이 있다 →
           그 자리에서 «아무 소리 없는 한 조각» 을 실제로 틀어 준다 */
     unlock(){
       try {
-        if (navigator.audioSession) navigator.audioSession.type = 'playback';
+        if (navigator.audioSession) navigator.audioSession.type = 'ambient';
         const c = ready();
         const b = c.createBuffer(1, 1, 22050), src = c.createBufferSource();
         src.buffer = b; src.connect(c.destination); src.start(0);
