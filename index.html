@@ -155,6 +155,12 @@ body{
 .musicbtn .slash{display:none}
 .musicbtn.off .slash{display:block}
 .musicbtn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+/* 대결 화면의 음악 단추 — 각자 자기 기준 오른쪽 아래(홈 단추 반대편).
+   반쪽 전체가 버저라 .half 밖(#arena 직속)에 둔다. 홈 단추처럼 흐리게 두어 판을 가리지 않는다 */
+.musicbtn.duel{position:absolute;z-index:3;width:42px;height:42px;opacity:.55;touch-action:none}
+.musicbtn.duel svg{width:22px;height:22px}
+#musicA{top:12px;left:12px;right:auto;transform:rotate(180deg)}
+#musicB{bottom:12px;right:12px;top:auto}
 .gamelist{width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px}
 .gamecard{
   display:flex;align-items:center;gap:16px;
@@ -557,6 +563,23 @@ body{
               stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
+    <!-- 음악 끄고 켜기 — 첫 화면 단추와 같은 스위치다(어느 쪽을 눌러도 셋이 같이 바뀐다) -->
+    <button class="musicbtn duel" id="musicA" type="button" aria-pressed="true" aria-label="배경음악 끄기">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M7 12.6h4.4L17.2 8v16l-5.8-4.6H7z" fill="#2E2B3A"/>
+        <path class="wave" d="M21.4 12a5.6 5.6 0 0 1 0 8" fill="none" stroke="#2E2B3A" stroke-width="2.6" stroke-linecap="round"/>
+        <path class="wave" d="M25 8.8a10.2 10.2 0 0 1 0 14.4" fill="none" stroke="#2E2B3A" stroke-width="2.6" stroke-linecap="round"/>
+        <path class="slash" d="M21 11.6l8.4 8.8M29.4 11.6L21 20.4" fill="none" stroke="#2E2B3A" stroke-width="2.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <button class="musicbtn duel" id="musicB" type="button" aria-pressed="true" aria-label="배경음악 끄기">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M7 12.6h4.4L17.2 8v16l-5.8-4.6H7z" fill="#2E2B3A"/>
+        <path class="wave" d="M21.4 12a5.6 5.6 0 0 1 0 8" fill="none" stroke="#2E2B3A" stroke-width="2.6" stroke-linecap="round"/>
+        <path class="wave" d="M25 8.8a10.2 10.2 0 0 1 0 14.4" fill="none" stroke="#2E2B3A" stroke-width="2.6" stroke-linecap="round"/>
+        <path class="slash" d="M21 11.6l8.4 8.8M29.4 11.6L21 20.4" fill="none" stroke="#2E2B3A" stroke-width="2.6" stroke-linecap="round"/>
+      </svg>
+    </button>
     <!-- 게임이 쓰는 보조 버튼. 기본은 숨김이고, 게임이 ctx.setSide 로 켠다. -->
     <button class="sidebtn" id="sideA" type="button" hidden></button>
     <button class="sidebtn" id="sideB" type="button" hidden></button>
@@ -641,13 +664,14 @@ const Sound = (() => {
 })();
 
 /* =========================================================
-   1-3. 배경음악 — 첫 화면에서만 작게 흐른다
+   1-3. 배경음악 — 첫 화면은 곡 전체, 대결 중에는 작은 반주
    음원 파일 없이 **코드로 지은 곡**이다(사랑나라와 같은 방식) — 용량이 0 이고
    오프라인에서도 그대로 나오며 남의 음원을 쓰지 않는다.
    이름 그대로 «쿵»(낮은 북, 1·3박)과 «짝»(높은 화음, 2·4박)이 번갈아 뛰는
    폴카 걸음 위에 다섯 음(도·레·미·솔·라) 가락을 얹었다. 8마디가 돌고 돈다.
    ⚠ 브라우저는 사람이 화면을 한 번 건드리기 전에는 소리를 못 낸다 — 첫 탭에 켠다.
-   ⚠ 대결에 들어가면 끈다. 게임 소리(딩동·삐·초읽기)와 겹치면 둘 다 안 들린다.
+   ⚠ 대결 중에는 가락을 빼고 작은 반주만 깐다(2026-09-29). 게임 소리(딩동·삐·초읽기)와 겹치면 둘 다 안 들린다.
+     점수가 나면 짧은 멜로디(jingle), 승부가 나면 조금 긴 것. 결과 화면은 조용하다.
    ========================================================= */
 const Music = (() => {
   const STEP = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
@@ -670,6 +694,10 @@ const Music = (() => {
   ];
 
   let ac = null, on = true, timer = 0, next = 0, live = [];
+  /* 'menu' = 첫 화면 곡 전체 · 'duel' = 대결 중 반주(2026-09-29 사용자 1-1).
+     대결 중에는 가락·«찰» 을 빼고 낮은 «쿵» 과 옅은 «짝» 만 작게 깐다 —
+     초읽기(똑)·정답(딩동)·오답(삐)이 묻히면 게임이 안 되기 때문이다. */
+  let mode = 'menu';
 
   function voice(f, t, dur, vol, type){
     const o = ac.createOscillator(), g = ac.createGain();
@@ -686,6 +714,16 @@ const Music = (() => {
 
   /* 한 바퀴(8마디)를 통째로 예약한다 */
   function cycle(t0){
+    if (mode === 'duel'){
+      BARS.forEach((ch, bar) => {
+        const b = t0 + bar * 4 * BEAT;
+        voice(hz(BASS[ch]), b,            BEAT * .5, .07, 'triangle');   // 쿵
+        voice(hz(BASS[ch]), b + 2 * BEAT, BEAT * .5, .07, 'triangle');   // 쿵
+        [1, 3].forEach(beat => CHORD[ch].forEach(n =>                    // 짝 — 네모파 대신 부드러운 세모파
+          voice(hz(n), b + beat * BEAT, BEAT * .3, .018, 'triangle')));
+      });
+      return;
+    }
     BARS.forEach((ch, bar) => {
       const b = t0 + bar * 4 * BEAT;
       voice(hz(BASS[ch]), b,            BEAT * .55, .15, 'triangle');    // 쿵
@@ -736,8 +774,26 @@ const Music = (() => {
 
   return {
     isOn(){ return on; },
-    start: begin,
+    /** m = 'menu' | 'duel'. 곡이 바뀌면 끊고 새로 건다 */
+    start(m = 'menu'){
+      if (m !== mode){ end(); mode = m; }
+      begin();
+    },
     stop: end,
+    /* 점수가 났을 때 짧은 멜로디. big = 승부가 끝났을 때(조금 길게).
+       정답 «딩동» 바로 뒤에 겹치지 않게 살짝 늦게 낸다 */
+    jingle(big){
+      if (!on) return;
+      ac = ac || Sound.ctx();
+      if (!ac || ac.state !== 'running') return;
+      const t = ac.currentTime + .38, d = .11;
+      const notes = big ? ['C5','E5','G5','C6','G5','C6'] : ['G4','C5','E5'];
+      notes.forEach((n, i) => {
+        const last = i === notes.length - 1;
+        voice(hz(n), t + i * d, last ? (big ? .55 : .32) : d * .9, .09, 'triangle');
+      });
+      if (big) voice(hz('C3'), t + (notes.length - 1) * d, .5, .12, 'triangle');
+    },
     /* 로고가 부딪히는 순간 — 낮은 «쿵» 과 짧은 «짝» 을 겹쳐 한 방 */
     bump(){
       if (!on) return;
@@ -827,7 +883,9 @@ const ctx = {
   award(winner){
     score[winner]++;
     drawPips();
-    if (score[winner] >= winScore) { setTimeout(() => finish(winner), 1100); return true; }
+    const done = score[winner] >= winScore;
+    Music.jingle(done);
+    if (done) { setTimeout(() => finish(winner), 1100); return true; }
     // 랜덤 모드에서는 true 를 돌려주어 게임이 다음 판을 스스로 예약하지 않게 한다.
     // 그 자리를 nextRandom 이 대신 가져간다 — 안 그러면 옛 게임의 타이머가 겹쳐 돈다.
     if (randomMode) { randTimer = setTimeout(nextRandom, 1500); return true; }
@@ -887,7 +945,10 @@ function startRandom(){
 
 function show(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
-  if (id === 'menu'){ Music.start(); flyLogo(); } else Music.stop();   // 배경음악·로고는 첫 화면에서만
+  // 첫 화면은 곡 전체 + 로고, 대결은 작은 반주, 결과 화면은 조용히
+  if (id === 'menu'){ Music.start('menu'); flyLogo(); }
+  else if (id === 'arena') Music.start('duel');
+  else Music.stop();
 }
 
 /* 로고를 다시 날려 보낸다. 클래스를 뗐다 붙이는 사이에 한 번 그려 줘야(offsetWidth)
@@ -2257,13 +2318,15 @@ GAMES.land = {
 
   /* 배경음악 — 끄면 그 뒤로 안 켜진다. 기기에 저장하지 않으므로 앱을 껐다 켜면
      다시 켜진 상태로 돌아온다(내기 점수와 같은 규칙). */
-  const mbtn = el('#musicBtn');
-  mbtn.addEventListener('click', () => {
+  const mbtns = ['#musicBtn', '#musicA', '#musicB'].map(el);
+  mbtns.forEach(b => b.addEventListener('click', () => {
     const on = Music.toggle();
-    mbtn.classList.toggle('off', !on);
-    mbtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    mbtn.setAttribute('aria-label', on ? '배경음악 끄기' : '배경음악 켜기');
-  });
+    mbtns.forEach(m => {
+      m.classList.toggle('off', !on);
+      m.setAttribute('aria-pressed', on ? 'true' : 'false');
+      m.setAttribute('aria-label', on ? '배경음악 끄기' : '배경음악 켜기');
+    });
+  }));
   /* 브라우저는 사람이 한 번 건드리기 전에는 소리를 못 낸다 — 첫 탭에 깨운다. */
   const wake = () => {
     document.removeEventListener('pointerdown', wake);
