@@ -8,7 +8,7 @@
 
 무엇을 하는가
     1. index.html 에 실제로 등장하는 글자를 모두 모은다 (주석까지 포함 — 여유분)
-    2. Jua / Gothic A1(400·700) 원본을 내려받아 tools/.fontcache/ 에 둔다
+    2. Jua / 고운돋움(400) · Gothic A1 Medium(굵은 자리) 원본을 내려받아 tools/.fontcache/ 에 둔다
     3. 그 글자들만 남기고 woff2 로 줄인다 (pyftsubset)
     4. base64 로 <style> 맨 앞에 @font-face 로 심는다
     5. CDN <link> 세 줄을 지운다
@@ -21,7 +21,7 @@
 
 여러 번 돌려도 안전하다 (기존 임베드 블록을 지우고 다시 만든다).
 
-글꼴 라이선스: Jua, Gothic A1 모두 SIL Open Font License 1.1 — 임베드·재배포 가능.
+글꼴 라이선스: Jua, 고운돋움, Gothic A1 모두 SIL Open Font License 1.1 — 임베드·재배포 가능.
 """
 import base64
 import io
@@ -42,8 +42,11 @@ BASE = 'https://raw.githubusercontent.com/google/fonts/main/'
 FACES = [
     # (글꼴 이름, 굵기, 원본 경로)
     ('Jua',       400, 'ofl/jua/Jua-Regular.ttf'),
-    ('Gothic A1', 400, 'ofl/gothica1/GothicA1-Regular.ttf'),
-    ('Gothic A1', 700, 'ofl/gothica1/GothicA1-Bold.ttf'),
+    # 본문 = 소담 기본 글씨체 고운돋움(2026-09-30 사용자 1-1). 고운돋움엔 굵은 판이 없어
+    # 굵은 자리(700)는 Gothic A1 Medium 을 같은 이름으로 얹는다 — 안 그러면 브라우저가
+    # 억지로 굵게 그려 글자가 뭉갠다(작업실과 같은 방식)
+    ('Gowun Dodum', 400, 'ofl/gowundodum/GowunDodum-Regular.ttf'),
+    ('Gowun Dodum', 700, 'ofl/gothica1/GothicA1-Medium.ttf'),
 ]
 
 # 화면에 안 쓰더라도 넣어 두는 최소 글자 (숫자·문장부호·자주 쓸 낱말)
