@@ -1,6 +1,6 @@
 /* 쿵짝 서비스워커 — 오프라인 지원.
    게임 파일을 바꾸면 CACHE 버전을 올려야 새 파일이 적용된다. */
-const CACHE = 'kungjjak-v32';  /* 대결 중 작은 반주 · 점수 멜로디 · 대결 화면 음악 단추 */
+const CACHE = 'kungjjak-v33';  /* 아이폰에서 음악이 안 들리던 것 */
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',
