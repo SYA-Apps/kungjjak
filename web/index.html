@@ -649,7 +649,19 @@ const Sound = (() => {
     o.start(t); o.stop(t + dur + 0.03);
   }
   return {
-    unlock(){ try { ready(); } catch(e){} },
+    /* 🍎 아이폰 사파리 (2026-09-29 «아이폰 웹에서 음악 소리가 안 들려»)
+       ① 소리 끔 스위치(벨소리 무음)를 켜 두면 웹오디오가 통째로 조용해진다 →
+          audioSession 을 'playback' 으로 두면 게임·음악 앱처럼 들린다(iOS 17+)
+       ② 손가락이 닿는 순간(pointerdown)만으로는 오디오가 안 깨어나는 판이 있다 →
+          그 자리에서 «아무 소리 없는 한 조각» 을 실제로 틀어 준다 */
+    unlock(){
+      try {
+        if (navigator.audioSession) navigator.audioSession.type = 'playback';
+        const c = ready();
+        const b = c.createBuffer(1, 1, 22050), src = c.createBufferSource();
+        src.buffer = b; src.connect(c.destination); src.start(0);
+      } catch(e){}
+    },
     ok(){   // 딩-동 (올라가는 두 음)
       try { tone(880, 0, 0.13, 'sine', .20); tone(1318.5, 0.11, 0.24, 'sine', .18); } catch(e){}
     },
@@ -2328,12 +2340,25 @@ GAMES.land = {
     });
   }));
   /* 브라우저는 사람이 한 번 건드리기 전에는 소리를 못 낸다 — 첫 탭에 깨운다. */
+  /* 🍎 아이폰은 pointerdown 이 아니라 손을 뗄 때(touchend·click)에만 깨워 주는 판이 있다.
+     그래서 셋 다 걸어 두고, 오디오가 정말 «running» 이 된 뒤에야 떼어 낸다.
+     (전에는 첫 pointerdown 에 바로 떼어서, 아이폰에서는 끝내 음악이 안 켜졌다) */
+  const WAKE_EV = ['pointerdown', 'touchend', 'click'];
+  const onScreen = () => el('#menu').classList.contains('on') ? 'menu'
+                       : el('#arena').classList.contains('on') ? 'duel' : null;
   const wake = () => {
-    document.removeEventListener('pointerdown', wake);
     Sound.unlock();
-    if (el('#menu').classList.contains('on')) Music.start();
+    const m = onScreen(); if (m) Music.start(m);      // 아직 잠들어 있으면 Music 이 깨어나길 기다렸다 시작한다
+    const c = Sound.ctx();
+    if (c && c.state === 'running')                    // resume 은 비동기라 첫 탭엔 아직일 수 있다 → 다음 탭에 다시 본다
+      WAKE_EV.forEach(ev => document.removeEventListener(ev, wake, true));
   };
-  document.addEventListener('pointerdown', wake);
+  WAKE_EV.forEach(ev => document.addEventListener(ev, wake, true));
+  /* 다른 앱에 갔다 오면 아이폰이 오디오를 «interrupted» 로 멈춰 둔다 → 돌아오면 다시 깨운다 */
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    const c = Sound.ctx(); if (c && c.state !== 'running') WAKE_EV.forEach(ev => document.addEventListener(ev, wake, true));
+  });
 
   /* 게임 중 나가기 — 0.7초 눌러야 열린다.
      반쪽 전체가 버저라 짧은 탭으로 나가면 실수로 대결이 날아간다.
