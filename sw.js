@@ -1,6 +1,6 @@
 /* 쿵짝 서비스워커 — 오프라인 지원.
    게임 파일을 바꾸면 CACHE 버전을 올려야 새 파일이 적용된다. */
-const CACHE = 'kungjjak-v46';  /* 추천하기 단추를 게임 목록 아래로 · 옅게 */
+const CACHE = 'kungjjak-v47';  /* 안내의 집 그림을 게임 단추 그대로 크게 */
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',
