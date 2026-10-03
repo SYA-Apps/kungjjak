@@ -1,11 +1,11 @@
 /* 쿵짝 서비스워커 — 오프라인 지원.
    게임 파일을 바꾸면 CACHE 버전을 올려야 새 파일이 적용된다. */
-const CACHE = 'kungjjak-v44';  /* 친구에게 추천하기 · 글꼴 정보 */
+const CACHE = 'kungjjak-v45';  /* 영어판(언어 자동 + English/한국어 전환) */
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',
   './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
-  './privacy.html'
+  './privacy.html', './privacy-en.html'
 ];
 
 self.addEventListener('install', e => {

@@ -276,7 +276,8 @@ grep -nE '<(script|link|img|audio|video|source|iframe)[^>]*(src|href)=|fetch\(|X
 
 🎉 **2026-10-02 프로덕션 공개**(대한민국 · 1.0.0). **1.0.1(+3) 업데이트 검토 중**(2026-10-03 11:30 ADMIN 전송 — 추천하기 단추 · 글꼴 정보 화면 · 9/17 이후 웹 고침).
 공유는 `share_plus` 를 빼고 `MainActivity.kt` 의 `MethodChannel("kungjjak/share")` 로 한다 — share_plus 가 `libdartjni.so` 를 딸려 와 콘솔이 «기기 26개 지원 안 함» 을 띄웠고, 빼니 0개였다. **다시 넣지 말 것.**
-🌍 다음: 해외판(영어) — 1.0.1 검토가 끝난 뒤 콘솔 en-US 등록정보 · 국가 4곳(ADMIN 대기 항목).
+🌍 **해외판(영어) 웹 준비 끝(2026-10-03 · 캐시 `v45`)** — 언어 자동 + 첫 화면 「English / 한국어」(기기에 저장 안 함) · `web/privacy-en.html` · `store-assets/listing-en-US.md`.
+남은 일(1.0.1 검토 뒤 · +4 판 · 콘솔 en-US · 국가 4곳)은 **`docs/해외판-준비.md`**.
 **이름 "쿵짝" 상표 확정 · 실기기(갤럭시 S8) 1차 테스트 완료 — 둘 다 2026-09-01.**
 **웹 배포 완료 · 안드로이드 APK 빌드·설치·동작 확인 완료 — 둘 다 2026-09-02.**
 
