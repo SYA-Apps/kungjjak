@@ -17,12 +17,16 @@
     - ⚠ **가장자리는 잘릴 수 있다.** 중요한 것은 안쪽 80% 에 둔다.
 """
 import os
+import sys
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONT = os.path.join(ROOT, 'tools', '.fontcache')
-OUT  = os.path.join(ROOT, 'store-assets', 'feature-graphic-1024x500.png')
-OUT2 = os.path.join(ROOT, 'store-assets', 'feature-graphic-2048x1000.png')
+# --en: 해외판(영어) 그림. 이름 Tap Pals · 두 사람 Tap / Pal (2026-10-03)
+EN   = '--en' in sys.argv
+SUF  = '-en' if EN else ''
+OUT  = os.path.join(ROOT, 'store-assets', f'feature-graphic{SUF}-1024x500.png')
+OUT2 = os.path.join(ROOT, 'store-assets', f'feature-graphic{SUF}-2048x1000.png')
 
 W, H  = 1024, 500
 BG    = (0xF2, 0xF1, 0xF8)   # --bg
@@ -95,15 +99,19 @@ def build():
 
     # 자간은 웹 로고(.logo)와 같은 비율로 맞춘다 — 52px 에 2px ⇒ 180px 에 7px.
     # 앱 안과 스토어 대문의 로고가 달라 보이면 안 된다.
-    center('쿵짝', ImageFont.truetype(jua, 180 * S), 48, INK, track=7)
-    center('둘이서, 폰 하나로', ImageFont.truetype(g1b, 42 * S), 252, SUB)
+    if EN:
+        center('Tap Pals', ImageFont.truetype(jua, 170 * S), 52, INK, track=3)
+        center('Two players, one phone', ImageFont.truetype(g1b, 42 * S), 252, SUB)
+    else:
+        center('쿵짝', ImageFont.truetype(jua, 180 * S), 48, INK, track=7)
+        center('둘이서, 폰 하나로', ImageFont.truetype(g1b, 42 * S), 252, SUB)
 
-    pill(300, 356, MINT, '쿵')
-    pill(724, 356, CORAL, '짝')
+    pill(300, 356, MINT, 'Tap' if EN else '쿵')
+    pill(724, 356, CORAL, 'Pal' if EN else '짝')
 
     # 맨 아래 한 줄. 알약과 40px, 아래 가장자리와 40px 이상 띄운다(잘림 대비).
     f_small = ImageFont.truetype(g1b, 26 * S)
-    txt = '미니게임 10개 · 완전 오프라인'
+    txt = '10 mini games · No internet needed' if EN else '미니게임 10개 · 완전 오프라인'
     l, t, rr, b = d.textbbox((0, 0), txt, font=f_small)
     d.text((W * S / 2 - (rr - l) / 2 - l, 448 * S - t - (b - t) / 2),
            txt, font=f_small, fill=(0x8B, 0x87, 0x9C))
