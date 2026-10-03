@@ -236,6 +236,9 @@ class MainActivity : FlutterActivity() {
 }
 ```
 
+1.0.1+3 부터 같은 파일에 공유 시트용 `MethodChannel("kungjjak/share")`(Intent.ACTION_SEND)가 더해졌다.
+`share_plus` 는 쓰지 않는다 — 넣으면 `libdartjni.so` 가 딸려 와 콘솔이 「기기 26개 지원 안 함」 경고를 냈다.
+
 ### target API — **손댈 것 없다**
 Flutter 3.44 의 기본값이 이미 `compileSdk 36 · targetSdk 36 · minSdk 24` 다.
 `build.gradle.kts` 는 `flutter.targetSdkVersion` 을 그대로 쓰므로 건드리지 않는다.

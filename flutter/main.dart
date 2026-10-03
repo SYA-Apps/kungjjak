@@ -6,7 +6,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 // web/index.html 의 :root 변수와 같은 값을 쓴다. 한쪽만 바꾸면 색이 어긋난다.
@@ -53,6 +52,7 @@ class GameView extends StatefulWidget {
 }
 
 class _GameViewState extends State<GameView> {
+  static const _shareCh = MethodChannel('kungjjak/share');
   late final WebViewController _web;
 
   @override
@@ -63,7 +63,7 @@ class _GameViewState extends State<GameView> {
       ..setBackgroundColor(kBg)
       // 웹의 「친구에게 추천하기」 단추가 보낸 글을 폰의 공유 시트로 연다(WebView 에는 navigator.share 가 없다)
       ..addJavaScriptChannel('KungShare',
-          onMessageReceived: (m) => Share.share(m.message))
+          onMessageReceived: (m) => _shareCh.invokeMethod('share', m.message))
       ..loadFlutterAsset('assets/web/index.html');
   }
 
