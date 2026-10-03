@@ -405,7 +405,11 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
 .who .face{width:28px;height:28px}
 
 .setting{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
-.setting .lab{font-size:13px;opacity:.55}
+/* 2026-10-03 사용자 «몇 점 내기 글씨를 빼고 나머지를 가운데, 글씨는 왼쪽에 메모처럼» —
+   글씨를 흐름에서 빼(absolute) 점수 단추 넷이 화면 가운데에 오게 하고, 글씨는 그 왼쪽 바깥에 작게 붙인다 */
+.setting{position:relative}
+.setting .lab{position:absolute;right:100%;top:50%;transform:translateY(-50%);margin-right:10px;
+  font-size:12px;opacity:.5;white-space:nowrap}
 .seg{display:flex;gap:6px}
 .seg button{
   font-family:var(--display);font-size:16px;color:var(--ink);
@@ -417,11 +421,14 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
 .seg button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 
 /* 친구에게 추천하기 · 글꼴 정보 (2026-10-03) */
-.sharebtn{font-family:var(--body);font-size:14px;font-weight:700;color:var(--ink);background:#fff;border:none;
-  border-radius:14px;height:40px;padding:0 18px;box-shadow:0 2px 0 var(--mute);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-.sharebtn:active{transform:translateY(2px);box-shadow:none}
+/* 2026-10-03 사용자 «너무 튄다 · 글씨체도» → 게임 목록 맨 아래로 옮기고, 흰 단추 대신 옅은 테두리만.
+   굵기 700 은 고딕 A1 이 얹혀 혼자 다른 글꼴로 보였다 — 본문(고운돋움) 400 으로 */
+.sharebtn{font-family:var(--body);font-size:14px;font-weight:400;color:var(--ink);opacity:.72;background:none;
+  border:1.5px solid var(--mute);border-radius:14px;height:40px;padding:0 16px;margin-top:-8px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px}
+.sharebtn:active{opacity:1;background:#fff}
 .sharebtn:focus-visible,.linkbtn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-.sharebtn svg{width:18px;height:18px}
+.sharebtn svg{width:16px;height:16px}
 .links{display:flex;justify-content:center;gap:4px}
 .linkbtn{font-family:var(--body);font-size:12px;color:var(--ink);opacity:.5;background:none;border:none;text-decoration:underline;cursor:pointer;margin:-10px 0 14px;padding:6px 10px}
 #toast{position:fixed;left:50%;bottom:8vh;transform:translateX(-50%);z-index:50;background:var(--ink);color:#fff;font-size:14px;
@@ -546,8 +553,8 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
       <span class="lab" data-i18n="win">몇 점 내기</span>
       <div class="seg" id="winseg"></div>
     </div>
-    <button class="sharebtn" id="shareBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2E2B3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.4"/><circle cx="17.5" cy="6" r="2.4"/><circle cx="17.5" cy="18" r="2.4"/><path d="M8.2 10.9l7.1-3.8M8.2 13.1l7.1 3.8"/></svg><span data-i18n="share">친구에게 추천하기</span></button>
     <div class="gamelist" id="gamelist"></div>
+    <button class="sharebtn" id="shareBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2E2B3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.4"/><circle cx="17.5" cy="6" r="2.4"/><circle cx="17.5" cy="18" r="2.4"/><path d="M8.2 10.9l7.1-3.8M8.2 13.1l7.1 3.8"/></svg><span data-i18n="share">친구에게 추천하기</span></button>
     <p class="hint" id="hint">폰을 가운데 두고 마주 앉으세요.<br>
       먼저 <b id="winNum">10</b>점을 내면 이깁니다.<br>
       대결 중에는 귀퉁이의 <svg class="hint-i" viewBox="0 0 40 40" aria-hidden="true"><path
