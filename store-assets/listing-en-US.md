@@ -12,16 +12,17 @@
 
 ---
 
-## App name (30 characters max) — 후보 셋
+## App name (30 characters max) — ✅ 「Tap Pals」 확정(2026-10-03 사용자)
 
 | | 이름 | 글자 수 | 느낌 |
 |---|---|---|---|
-| 1 | `Kungjjak - 2 Player Mini Games` | 30 | 검색어 «2 player» · «mini games» 가 둘 다 들어간다(추천) |
-| 2 | `Kungjjak - Party Games for Two` | 30 | «party games» 로 찾는 사람에게 |
-| 3 | `Kungjjak - Duel Games for Two` | 29 | 마주 앉아 겨루는 느낌 |
+| A | `Tap Pals - 2 Player Duels` | 25 | 「둘이 겨룬다」가 보인다 — pals 의 협동 느낌을 메운다(추천) |
+| B | `Tap Pals - 2 Player Games` | 25 | 가장 무난 · 사람들이 실제로 치는 검색어 «2 player games» 와 똑같다 |
 
-> 「Kungjjak」 은 로마자 표기라 영어권 사람은 뜻을 모른다. 그래서 뒤의 설명이 사실상 이름 역할을 한다 —
-> 사람들이 실제로 치는 말(«2 player games», «two player games»)을 앞에 둔다.
+> 뒤 설명 둘 중 하나는 넣기 직전 사용자 확인. 앞의 「Tap Pals」 는 확정.
+> 뜻: tap(톡 두드리다) + pals(단짝·짝꿍) — 「쿵짝이 맞는 짝꿍」 느낌. 게임 안 두 사람은 **Tip(민트) / Tap(코랄)**.
+> 「Tip Tap」 은 이름으로 안 쓴다 — 같은 장르 앱(「Tip Tap Challenge: Mini Games」 등)과 미국 상표 TIPTAP(9류)이 있다.
+> 「Tap Pals」 는 웹 검색으로 같은 이름 앱·상표를 못 찾았다(2026-10-03). 콘솔에 넣기 전 USPTO 공식 검색(tmsearch.uspto.gov)으로 한 번 더 본다.
 
 ## Short description (80 characters max)
 
@@ -87,6 +88,8 @@ A round takes from a few seconds to a few minutes.
 · Hold the phone upright (portrait), not sideways.
 · Intended for ages 13 and over.
 · The app follows your phone's language (English or Korean). You can switch on the first screen.
+
+Tap Pals is the English name of the Korean game 쿵짝 (Kungjjak).
 
 Privacy policy: https://sya-apps.github.io/kungjjak/privacy-en.html
 Try it in your browser first: https://sya-apps.github.io/kungjjak/
