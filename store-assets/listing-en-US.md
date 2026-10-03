@@ -12,14 +12,14 @@
 
 ---
 
-## App name (30 characters max) — ✅ 확정(2026-10-03 사용자 1-2)
+## App name (30 characters max) — ✅ 최종 확정(2026-10-03 사용자 · 콘솔에 넣는 값)
 
 ```
-Tap Pals - 2 Player Games
+Tap Pals - 2 Player Mini Games
 ```
 
-> 25자. 검색어 «2 player games» 와 똑같게 둔다(새 이름이라 처음엔 검색으로 들어온다). 겨루는 느낌은 짧은 설명이 맡는다.
-> (후보였던 `Tap Pals - 2 Player Duels` 는 어떤 게임인지는 더 잘 보이지만 검색 쪽을 골랐다)
+> 정확히 30자. 한국어 이름 「쿵짝 - 둘이서 하는 2인용 미니게임」 과 짝이 맞고 «2 player» · «mini games» 검색에 다 걸린다.
+> (중간에 `… - 2 Player Games` 로 정했다가 최종으로 Mini Games 를 넣었다 · `… - 2 Player Duels` 는 후보였다)
 > 뜻: tap(톡 두드리다) + pals(단짝·짝꿍) — 「쿵짝이 맞는 짝꿍」 느낌. 게임 안 두 사람은 **Tap(민트) / Pal(코랄)** — 로고 두 덩이와 같다.
 > 「Tip Tap」 은 이름으로 안 쓴다 — 같은 장르 앱(「Tip Tap Challenge: Mini Games」 등)과 미국 상표 TIPTAP(9류)이 있다.
 > 「Tap Pals」 는 웹 검색으로 같은 이름 앱·상표를 못 찾았다(2026-10-03). 콘솔에 넣기 전 USPTO 공식 검색(tmsearch.uspto.gov)으로 한 번 더 본다.
