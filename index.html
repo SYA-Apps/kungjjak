@@ -98,6 +98,8 @@ body{
    가운데서 딱 멈춰야 «박았다» 로 읽힌다. 감속하면 스르르 서서 맥이 빠진다.
    ⚠ 애니메이션은 transform 만 쓴다 — 글자 위치를 바꾸면 매 프레임 글꼴을 다시 그려 폰에서 끊긴다. */
 .logo .ku,.logo .jjak{display:inline-block;will-change:transform}
+.logo.en{letter-spacing:1px}
+.logo.en .jjak{margin-left:.28em}
 .logo.play .ku{animation:rollL 1.6s linear both}
 .logo.play .jjak{animation:rollR 1.6s linear both}
 @keyframes rollL{
@@ -2537,7 +2539,7 @@ GAMES.land = {
 
   /* 「English / 한국어」 — 화면에 박힌 글은 data-i18n, 섞인 것(설명·글꼴 정보)은 통째로 바꾼다 */
   const EN = {
-    rotB: 'Please hold your phone upright', rotP: 'Kungjjak works in portrait only',
+    rotB: 'Please hold your phone upright', rotP: 'Tap Pals works in portrait only',
     sub: 'Two players, one phone', win: 'Play to', share: 'Recommend to a friend',
     font: 'Font info', again: 'Rematch', toMenu: 'Pick a game'
   };
@@ -2550,7 +2552,7 @@ GAMES.land = {
     'First to <b id="winNum">10</b> points wins.<br>' +
     'To leave a match, press and hold the ' + homeSvg + ' in the corner.';
   const EN_FONT = '<b class="t">Font info</b>' +
-    'All fonts in Kungjjak are free fonts released under the SIL Open Font License 1.1.<br>' +
+    'All fonts in Tap Pals are free fonts released under the SIL Open Font License 1.1.<br>' +
     '· Jua - titles<br>· Gowun Dodum - body text<br>· Gothic A1 Medium - bold text<br>' +
     'Full license: openfontlicense.org' +
     '<button class="btn primary" id="fontClose" type="button">Close</button>';
@@ -2558,7 +2560,12 @@ GAMES.land = {
   bindClose();
   window.applyLang = () => {
     document.documentElement.lang = LANG;
-    document.title = T('쿵짝', 'Kungjjak');
+    document.title = T('쿵짝', 'Tap Pals');
+    /* 로고 — 영어는 «Tap Pals»(2026-10-03 사용자 3-1). 두 덩이가 굴러와 박히는 움직임은 그대로 */
+    el('#logo .ku').textContent = T('쿵', 'Tap');
+    el('#logo .jjak').textContent = T('짝', 'Pals');
+    el('#logo').classList.toggle('en', LANG === 'en');
+    el('#logo').setAttribute('aria-label', T('쿵짝', 'Tap Pals'));
     document.querySelectorAll('[data-i18n]').forEach(n => {
       const k = n.dataset.i18n; n.textContent = LANG === 'en' ? EN[k] : KO[k];
     });
@@ -2597,7 +2604,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
   function toast(m){toastEl.textContent=m;toastEl.hidden=false;clearTimeout(tt);tt=setTimeout(function(){toastEl.hidden=true},2200)}
   var LINKS='\nhttps://sya-apps.github.io/kungjjak/\nhttps://play.google.com/store/apps/details?id=com.syaapps.kungjjak';
   /* 누를 때 언어를 본다 — 영어 화면이면 영어 한 줄로 보낸다 */
-  function text(){return T('쿵짝 - 둘이서 하는 2인용 미니게임','Kungjjak - mini games for two on one phone')+LINKS}
+  function text(){return T('쿵짝 - 둘이서 하는 2인용 미니게임','Tap Pals - mini games for two on one phone')+LINKS}
   function copy(){
     function legacy(){
       try{var t=document.createElement('textarea');t.value=text();t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();
@@ -2607,7 +2614,7 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
   }
   document.getElementById('shareBtn').addEventListener('click',function(){
     if(window.KungShare&&window.KungShare.postMessage){try{window.KungShare.postMessage(text());return}catch(e){}}
-    if(navigator.share){navigator.share({title:T('쿵짝','Kungjjak'),text:text()}).catch(function(e){if(e&&e.name!=='AbortError')copy()});return}
+    if(navigator.share){navigator.share({title:T('쿵짝','Tap Pals'),text:text()}).catch(function(e){if(e&&e.name!=='AbortError')copy()});return}
     copy();
   });
   var fi=document.getElementById('fontinfo');
