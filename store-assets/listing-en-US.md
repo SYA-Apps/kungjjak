@@ -53,7 +53,7 @@ Can't decide what to play? Pick "Random" and you'll switch to a different game a
 🍒 Exactly Five - Same picture, and the counts add up to 5
 🔄 Flip-Flop - Tap only on this round's color
 🎯 Odd One Out - One tile is a slightly different shade
-💣 Pass the Bomb - Pass it on before it blows
+💣 Bomb Relay - Pass it on before it blows
 👊 Tap Race - Tap more in 5 seconds
 🚩 Dots and Boxes - Draw lines, claim the boxes
 
