@@ -1,6 +1,6 @@
 /* 쿵짝 서비스워커 — 오프라인 지원.
    게임 파일을 바꾸면 CACHE 버전을 올려야 새 파일이 적용된다. */
-const CACHE = 'kungjjak-v52';  /* v51 문법 오류 고침(Bomb Relay 줄 쉼표) */
+const CACHE = 'kungjjak-v53';  /* 소리 안내 말풍선을 화면 아래로 · 카드 설명 글자 진하게 */
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',

@@ -205,8 +205,17 @@ cd app && flutter pub get
 `app/android/app/src/main/AndroidManifest.xml`
 
 ```xml
-<application android:label="쿵짝" ... >
+<application android:label="@string/app_name" ... >
 ```
+
+이름은 언어별 파일에 둔다(2026-10-04 · 영어 폰 홈 화면은 「Tap Pals」):
+
+```
+app/android/app/src/main/res/values/strings.xml      <string name="app_name">쿵짝</string>
+app/android/app/src/main/res/values-en/strings.xml   <string name="app_name">Tap Pals</string>
+```
+
+⚠️ `app/` 은 커밋되지 않으니 `flutter create` 로 다시 만들면 이 두 파일과 매니페스트를 다시 넣어야 한다.
 
 ### 세로 고정 (2026-09-29 사용자 «쿵짝은 세로모드만»)
 `main.dart` 의 `setPreferredOrientations` 는 **Flutter 가 뜬 뒤에야** 먹는다. 매니페스트에도 박아
