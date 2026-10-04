@@ -1,0 +1,6 @@
+[ko-KR]
+첫 화면을 더 보기 좋게 다듬었어요. 게임 설명 글자를 또렷하게 바꾸고, 소리 안내가 제목을 가리지 않게 했어요.
+
+[en-US]
+Polished the first screen: clearer game descriptions, and the sound tip no longer covers the title.
+Renamed "Pass the Bomb" to "Bomb Relay". On English phones the app is now called Tap Pals.
