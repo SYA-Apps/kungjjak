@@ -159,17 +159,19 @@ body{
 .musicbtn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 /* 소리 안내 말풍선 — 음악 단추 밑. 브라우저는 화면을 한 번 건드려야 소리를 내 준다는 것,
    아이폰은 무음 스위치를 따르니 소리가 안 나면 그것부터 보라는 것을 알려 준다 */
+/* 2026-10-04 S8 시험: 음악 단추 바로 밑에 두었더니 좁은 폰에서 제목 「쿵짝」 을 가렸다 →
+   화면 아래 가운데로 옮겼다(알림처럼). 잠깐 뜨는 안내라 카드 하나를 잠시 덮는 편이 제목을 가리는 것보다 낫다 */
 .soundtip{
-  position:fixed;top:68px;right:10px;z-index:5;max-width:230px;
+  position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  z-index:5;width:max-content;max-width:calc(100vw - 32px);
   background:var(--ink);color:#fff;font-size:13px;line-height:1.45;
-  padding:7px 11px;border-radius:12px;animation:tipin .3s ease-out;
+  padding:8px 14px;border-radius:14px;box-shadow:0 4px 14px rgba(46,43,58,.18);
+  animation:tipin .3s ease-out;
 }
-.soundtip::before{content:"";position:absolute;top:-6px;right:24px;
-  border:6px solid transparent;border-top:0;border-bottom-color:var(--ink)}
 .soundtip[hidden]{display:none}
 button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
 .soundtip.act{background:var(--b);color:var(--ink)}   /* 누르면 뭔가 되는 말풍선은 짝 색으로 */
-@keyframes tipin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes tipin{from{opacity:0;transform:translate(-50%,6px)}to{opacity:1;transform:translateX(-50%)}}
 /* 대결 화면의 음악 단추 — 각자 자기 기준 오른쪽 아래(홈 단추 반대편).
    반쪽 전체가 버저라 .half 밖(#arena 직속)에 둔다. 홈 단추처럼 흐리게 두어 판을 가리지 않는다 */
 .musicbtn.duel{position:absolute;z-index:3;width:42px;height:42px;opacity:.55;touch-action:none}
@@ -186,7 +188,10 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
 }
 .gamecard:active{transform:translateY(2px);box-shadow:none}
 .gamecard b{font-family:var(--display);font-size:19px;font-weight:400;display:block}
-.gamecard span{font-size:13px;opacity:.6}
+/* 2026-10-04 S8 시험 «설명이 너무 연해 읽기 힘들다» — 원인은 겹친 투명도였다.
+   예전 «.gamecard span{opacity:.6}» 이 그림 칸·글 묶음(.tx)·설명·난이도 알약 «모든 span» 에 걸려
+   설명은 .6×.6 = 36% 까지 흐려졌다. 이제 설명 한 줄에만 건다 */
+.gamecard .tx>span{font-size:13px;opacity:.72}
 .gamecard .chip{
   flex:none;width:46px;height:46px;border-radius:16px;
   display:grid;place-items:center;font-size:22px;
@@ -233,7 +238,7 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
   display:inline-block;margin-left:9px;vertical-align:3px;
   padding:2px 9px 3px;border-radius:999px;
   font-family:var(--body);font-size:11px;font-weight:700;
-  color:var(--ink);white-space:nowrap;
+  color:var(--ink);white-space:nowrap;opacity:.85;
 }
 .gamecard .lv1{background:var(--a)}    /* 쉬움  = 민트 */
 .gamecard .lv2{background:var(--go)}   /* 보통  = 노랑 */
