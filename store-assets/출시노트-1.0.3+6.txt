@@ -1,0 +1,5 @@
+[ko-KR]
+이제 컴퓨터와도 겨룰 수 있어요. 쉬움·보통·어려움 중에 골라 혼자서도 즐겨 보세요. 화면을 벗어나면 음악이 멈추고, 첫 화면도 더 보기 좋게 다듬었어요.
+
+[en-US]
+You can now play against the computer: pick Easy, Normal or Hard and enjoy it solo. Music stops when you leave the app, and the first screen got a polish. On English phones the app is now called Tap Pals.
