@@ -2692,11 +2692,19 @@ GAMES.land = {
       WAKE_EV.forEach(ev => document.removeEventListener(ev, wake, true));
   };
   WAKE_EV.forEach(ev => document.addEventListener(ev, wake, true));
-  /* 다른 앱에 갔다 오면 아이폰이 오디오를 «interrupted» 로 멈춰 둔다 → 돌아오면 다시 깨운다 */
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) return;
-    const c = Sound.ctx(); if (c && c.state !== 'running') WAKE_EV.forEach(ev => document.addEventListener(ev, wake, true));
-  });
+  /* 화면을 벗어나면 음악을 멈추고, 돌아와서 화면을 한 번 누르면 다시 나온다 (2026-10-08 사용자 1-1).
+     🪤 9/30 에는 오디오 장치까지 재우고(suspend) 돌아올 때 «저절로» 다시 켜려다 아이폰에서 끝내 안 나왔다(v41·v42 되돌림).
+     그래서 이번엔 ① 장치는 건드리지 않고 음만 끊는다 ② 다시 켜는 건 사람이 누르는 순간(wake)에만 한다.
+     앱(웹뷰)은 visibilitychange 를 안 주는 판이 있어 Flutter 껍데기가 kjPause/kjResume 을 직접 부른다(다음 판부터). */
+  const pauseMusic = () => { Music.stop(); };
+  const armWake = () => {
+    WAKE_EV.forEach(ev => document.addEventListener(ev, wake, true));
+    if (Music.isOn() && onScreen() === 'menu') tipSay(T('👆 화면을 누르면 음악이 나와요', '👆 Tap the screen to start the music'));
+  };
+  window.kjPause = pauseMusic;
+  window.kjResume = armWake;
+  document.addEventListener('visibilitychange', () => { document.hidden ? pauseMusic() : armWake(); });
+  window.addEventListener('pagehide', pauseMusic);
 
   /* 게임 중 나가기 — 0.7초 눌러야 열린다.
      반쪽 전체가 버저라 짧은 탭으로 나가면 실수로 대결이 날아간다.
