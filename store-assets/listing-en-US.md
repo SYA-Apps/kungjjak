@@ -84,7 +84,7 @@ A round takes from a few seconds to a few minutes.
 
 ■ Good to know
 
-· You need two people. It can't be played alone.
+· On your own? Play against the computer, set to Easy, Normal or Hard.
 · Hold the phone upright (portrait), not sideways.
 · Intended for ages 13 and over.
 · The app follows your phone's language (English or Korean). You can switch on the first screen.
