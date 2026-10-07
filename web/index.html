@@ -425,7 +425,8 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
   box-shadow:0 2px 0 var(--mute);cursor:pointer;transition:transform .12s ease;
 }
 .seg button:active{transform:translateY(2px);box-shadow:none}
-.seg button[aria-pressed="true"]{background:var(--ink);color:#fff;box-shadow:0 2px 0 #16141f}
+/* 고른 단추 — 검정이면 그림 글자(👥🤖)가 묻혀서(2026-10-07 사용자) 연한 회색 바탕 + 진한 테두리로 */
+.seg button[aria-pressed="true"]{background:var(--mute);color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
 .seg button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 .seg.wide button{padding:0 14px}
 .setting[hidden]{display:none}
