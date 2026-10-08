@@ -537,7 +537,7 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
   .half.wrong,.half.top.wrong{animation:none !important}
   .gamecard:active,.btn:active,.swatch:active{transform:none}
 }
-#vsseg .vsf{display:inline-block;width:22px;height:22px;vertical-align:-6px;margin-right:5px}#vsseg .vsf svg{width:100%;height:100%;display:block}
+#vsseg .vsf{display:inline-block;width:26px;height:26px;vertical-align:-8px;margin-right:5px}#vsseg .vsf svg{width:100%;height:100%;display:block}
 </style>
 </head>
 <body>
@@ -695,9 +695,11 @@ const MOODS = {
                                                              '<path d="M-11 18q5-6 11 0t11 0"/>']
 };
 
-function face(mood, color){
+function face(mood, color, robot){
   const [eyes, mouth] = MOODS[mood] || MOODS.calm;
-  return `<svg class="face" viewBox="-70 -70 140 140" aria-hidden="true">
+  const ears = robot ? `<g fill="${color}" stroke="#2E2B3A" stroke-width="5" stroke-linejoin="round">
+      <rect x="46" y="-8" width="20" height="30" rx="8"/><rect x="-66" y="-8" width="20" height="30" rx="8"/></g>` : '';
+  return `<svg class="face" viewBox="-70 -70 140 140" aria-hidden="true">${ears}
     <ellipse cx="0" cy="4" rx="54" ry="50" fill="${color}"/>
     <g fill="none" stroke="#2E2B3A" stroke-width="5"
        stroke-linecap="round" stroke-linejoin="round">${eyes}</g>
@@ -722,7 +724,7 @@ let LANG = (() => {
 const T = (ko, en) => LANG === 'en' ? en : ko;
 /** 플레이어 이름 — 한국어는 쿵(민트)/짝(코랄) → 로고 «쿵짝», 영어는 Tap(민트)/Pal(코랄) → 로고 «Tap Pals»
     (2026-10-03 사용자 «쿵/짝 이름도 tap pal 로». 그전엔 Tip/Tap) */
-const PN = p => p === 'A' ? (CPU.on ? T('쿵퓨터', 'CPU') : T('쿵', 'Tap')) : T('짝', 'Pal');
+const PN = p => p === 'A' ? (CPU.on ? T('쿵봇', 'Robo Tap') : T('쿵', 'Tap')) : T('짝', 'Pal');
 
 /* =========================================================
    1-2. 소리 — 음원 파일 없이 코드로 만든다 (용량 0)
@@ -992,7 +994,7 @@ let cleanup = null;   // 현재 게임의 정리 함수
 const ctx = {
   /** 캐릭터 표정 변경. mood 를 null 로 주면 캐릭터를 숨긴다 */
   setFace(p, mood){
-    halves[p].querySelector('[data-face]').innerHTML = mood ? face(mood, HEX[p]) : '';
+    halves[p].querySelector('[data-face]').innerHTML = mood ? face(mood, HEX[p], CPU.on && p === 'A') : '';
   },
   /** 게임별 커스텀 UI 를 넣는 슬롯 */
   setPanel(p, html){
@@ -1155,9 +1157,9 @@ function stopGame(){
 
 function finish(winner){
   stopGame();
-  el('#resFace').innerHTML = face('win', HEX[winner]);
+  el('#resFace').innerHTML = face('win', HEX[winner], CPU.on && winner === 'A');
   el('#resWho').textContent = !CPU.on ? T(PN(winner) + ' 승리', PN(winner) + ' wins')
-    : winner === 'B' ? T('내가 이겼다', 'You win') : T('쿵퓨터 승리', 'CPU wins');
+    : winner === 'B' ? T('내가 이겼다', 'You win') : T('쿵봇 승리', 'Robo Tap wins');
   el('#resScore').textContent = `${score.A} : ${score.B}`;
   show('result');
 }
@@ -2586,7 +2588,7 @@ GAMES.land = {
   drawWho();
   }
   function drawWho(){
-    el('#who').innerHTML = `<span>${face('calm', HEX.A)}${PN('A')}</span>` +
+    el('#who').innerHTML = `<span>${face('calm', HEX.A, CPU.on)}${PN('A')}</span>` +
                            `<span>${face('calm', HEX.B)}${PN('B')}</span>`;
   }
   /* 상대 고르기 — 친구 / 컴퓨터, 컴퓨터면 실력 셋 (기기에 저장하지 않는다) */
@@ -2601,7 +2603,7 @@ GAMES.land = {
       box.appendChild(b);
     };
     btn(vs, `<i class="vsf">${face('calm', HEX.B)}</i>` + T('친구', 'Friend'), !CPU.on, () => { CPU.on = false; });
-    btn(vs, `<i class="vsf">${face('calm', HEX.A)}</i>` + T('쿵퓨터', 'CPU'),  CPU.on,  () => { CPU.on = true; });
+    btn(vs, `<i class="vsf">${face('calm', HEX.A, true)}</i>` + T('쿵봇', 'Robo Tap'),  CPU.on,  () => { CPU.on = true; });
     [1, 2, 3].forEach(n => btn(lv, LEVEL[n], CPU.level === n, () => { CPU.level = n; }));
     el('#lvrow').hidden = !CPU.on;
     drawWho();
