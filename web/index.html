@@ -449,6 +449,16 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
 #toast{position:fixed;left:50%;bottom:8vh;transform:translateX(-50%);z-index:50;background:var(--ink);color:#fff;font-size:14px;
   padding:9px 16px;border-radius:14px;max-width:80vw;text-align:center}
 #toast[hidden]{display:none}
+/* 아이폰에서 앱처럼 쓰기 (2026-10-09) — 아이폰 사파리 웹에서만 보인다. 그림은 대문 한 장을 눌렀을 때만 불러온다 */
+.iosbtn{font-family:var(--body);font-size:13px;color:var(--ink);opacity:.72;background:none;border:none;text-decoration:underline;cursor:pointer;margin-top:-6px;padding:6px 10px}
+.iosbtn[hidden]{display:none}
+.iosbtn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+#iosinfo{position:fixed;inset:0;z-index:40;background:rgba(46,43,58,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+#iosinfo[hidden]{display:none}
+#iosinfo .box{background:#fff;border-radius:22px;padding:20px 18px 16px;max-width:360px;width:100%;max-height:92vh;overflow:auto;font-size:14px;line-height:1.7;text-align:center}
+#iosinfo b.t{font-family:var(--display);font-size:20px;font-weight:400;display:block;margin-bottom:4px}
+#iosinfo img{width:100%;height:auto;border-radius:12px;margin:8px 0}
+#iosinfo .btn{margin-top:8px;width:100%}
 #fontinfo{position:fixed;inset:0;z-index:40;background:rgba(46,43,58,.55);display:flex;align-items:center;justify-content:center;padding:24px}
 #fontinfo[hidden]{display:none}
 #fontinfo .box{background:#fff;border-radius:22px;padding:22px 22px 18px;max-width:340px;width:100%;font-size:14px;line-height:1.7}
@@ -579,6 +589,7 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
     </div>
     <div class="gamelist" id="gamelist"></div>
     <button class="sharebtn" id="shareBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2E2B3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.4"/><circle cx="17.5" cy="6" r="2.4"/><circle cx="17.5" cy="18" r="2.4"/><path d="M8.2 10.9l7.1-3.8M8.2 13.1l7.1 3.8"/></svg><span data-i18n="share">친구에게 추천하기</span></button>
+    <button class="iosbtn" id="iosBtn" type="button" hidden data-i18n="ios">아이폰에서 앱처럼 쓰기</button>
     <p class="hint" id="hint">폰을 가운데 두고 마주 앉으세요.<br>
       먼저 <b id="winNum">10</b>점을 내면 이깁니다.<br>
       대결 중에는 귀퉁이의 <svg class="hint-i" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#DCDAE8" stroke-width="2"/><path
@@ -673,6 +684,15 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
     · 고딕 A1 미디엄 (Gothic A1 Medium) - 굵은 글씨<br>
     라이선스 전문: openfontlicense.org
     <button class="btn primary" id="fontClose" type="button">닫기</button>
+  </div>
+</div>
+<div id="iosinfo" hidden role="dialog" aria-modal="true">
+  <div class="box">
+    <b class="t" id="iosT">아이폰에서 앱처럼 쓰기</b>
+    <span id="iosSub">사파리 공유 → 홈 화면에 추가</span>
+    <img id="iosImg" alt="" hidden>
+    <span id="iosFall" hidden>사파리의 공유 버튼을 누르고 「홈 화면에 추가」를 고르면 앱처럼 쓸 수 있어요.</span>
+    <button class="btn primary" id="iosClose" type="button">닫기</button>
   </div>
 </div>
 
@@ -2742,7 +2762,7 @@ GAMES.land = {
   /* 「English / 한국어」 — 화면에 박힌 글은 data-i18n, 섞인 것(설명·글꼴 정보)은 통째로 바꾼다 */
   const EN = {
     rotB: 'Please hold your phone upright', rotP: 'Tap Pals works in portrait only',
-    sub: 'Two players, one phone', win: 'Play to', vs: 'Opponent', lv: 'Skill', share: 'Recommend to a friend',
+    sub: 'Two players, one phone', win: 'Play to', vs: 'Opponent', lv: 'Skill', share: 'Recommend to a friend', ios: 'Use it like an app on iPhone',
     font: 'Font info', again: 'Rematch', toMenu: 'Pick a game'
   };
   const KO = {};
@@ -2820,6 +2840,34 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
     if(navigator.share){navigator.share({title:T('쿵짝','Tap Pals'),text:text()}).catch(function(e){if(e&&e.name!=='AbortError')copy()});return}
     copy();
   });
+  /* 아이폰 사파리이고 홈 화면 앱이 아닐 때만 보인다(안드로이드·PC·앱·크롬·카톡 안은 숨김). 아무것도 저장하지 않는다 */
+  function iosHint(){
+    try{
+      var ua=navigator.userAgent||'',pf=navigator.platform||'',tp=navigator.maxTouchPoints||0;
+      var ios=/iPhone|iPod|iPad/.test(ua)||(pf==='MacIntel'&&tp>1);
+      if(!ios)return false;
+      if(!/Safari/.test(ua)||/CriOS|FxiOS|EdgiOS|NAVER|KAKAOTALK|DaumApps/.test(ua))return false;
+      if(navigator.standalone)return false;
+      if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)return false;
+      return true;
+    }catch(e){return false}
+  }
+  var iosBtn=document.getElementById('iosBtn'),iosBox=document.getElementById('iosinfo');
+  if(iosHint()){
+    iosBtn.hidden=false;
+    iosBtn.addEventListener('click',function(){
+      document.getElementById('iosT').textContent=T('아이폰에서 앱처럼 쓰기','Use it like an app on iPhone');
+      document.getElementById('iosSub').textContent=T('사파리 공유 → 홈 화면에 추가','Safari Share → Add to Home Screen');
+      document.getElementById('iosFall').textContent=T('사파리의 공유 버튼을 누르고 「홈 화면에 추가」를 고르면 앱처럼 쓸 수 있어요.','Tap the Share button in Safari, then choose Add to Home Screen.');
+      var img=document.getElementById('iosImg'),fb=document.getElementById('iosFall');
+      img.hidden=false;fb.hidden=true;
+      img.onerror=function(){img.hidden=true;fb.hidden=false};
+      if(!img.src)img.src='https://sya-apps.github.io/guide/ios-add-to-home.png';
+      iosBox.hidden=false;
+    });
+    document.getElementById('iosClose').addEventListener('click',function(){iosBox.hidden=true});
+    iosBox.addEventListener('click',function(e){if(e.target===iosBox)iosBox.hidden=true});
+  }
   var fi=document.getElementById('fontinfo');
   document.getElementById('fontLink').addEventListener('click',function(){fi.hidden=false});
   fi.addEventListener('click',function(e){if(e.target===fi)fi.hidden=true});
