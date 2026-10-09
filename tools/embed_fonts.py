@@ -45,7 +45,9 @@ FACES = [
     # 본문 = 소담 기본 글씨체 고운돋움(2026-09-30 사용자 1-1). 고운돋움엔 굵은 판이 없어
     # 굵은 자리(700)는 Gothic A1 Medium 을 같은 이름으로 얹는다 — 안 그러면 브라우저가
     # 억지로 굵게 그려 글자가 뭉갠다(작업실과 같은 방식)
-    ('Gowun Dodum', 400, 'ofl/gowundodum/GowunDodum-Regular.ttf'),
+    # 400 은 소담 공용판(같은 글자 + 「」『』〈〉《》•♡♥ — 원본엔 「」 가 없다 · 2026-10-01 두바퀴환승 함정).
+    # 'local:' 은 이 PC 의 공용 글꼴 폴더에서 바로 읽는다(OFL · 같은 이름으로 얹는다)
+    ('Gowun Dodum', 400, 'local:C:/SYA/tools/fonts/GowunDodum-Sodam.ttf'),
     ('Gowun Dodum', 700, 'ofl/gothica1/GothicA1-Medium.ttf'),
 ]
 
@@ -66,6 +68,11 @@ def log(msg):
 
 def fetch(path):
     """원본 ttf 를 내려받아 캐시에 둔다."""
+    if path.startswith('local:'):
+        local = path[6:]
+        if not os.path.exists(local):
+            sys.exit('공용 글꼴이 없다: ' + local)
+        return local
     if not os.path.isdir(CACHE):
         os.makedirs(CACHE)
     dest = os.path.join(CACHE, os.path.basename(path))
