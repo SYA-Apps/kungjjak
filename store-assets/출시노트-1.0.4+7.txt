@@ -1,0 +1,5 @@
+[ko-KR]
+친구에게 추천하기 글을 더 간단하게 바꿨어요. 컴퓨터와 하는 상대 이름은 쿵봇이에요.
+
+[en-US]
+Sharing with friends is now simpler. The robot opponent is called Robo Tap, and the opponent row looks right on English phones.
