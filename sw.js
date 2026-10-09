@@ -1,6 +1,6 @@
 /* 쿵짝 서비스워커 — 오프라인 지원.
    게임 파일을 바꾸면 CACHE 버전을 올려야 새 파일이 적용된다. */
-const CACHE = 'kungjjak-v62';  /* 화면을 벗어나면 음악 멈춤 · 돌아와 누르면 다시 */
+const CACHE = 'kungjjak-v63';  /* 화면을 벗어나면 음악 멈춤 · 돌아와 누르면 다시 */
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',
@@ -14,7 +14,6 @@ self.addEventListener('install', e => {
        10분 캐시(max-age=600)를 걸어서, 배포 직후 설치되면 새 캐시에 옛 파일이 담길 수 있다. */
     caches.open(CACHE)
       .then(c => c.addAll(ASSETS.map(u => new Request(u, {cache: 'reload'}))))
-      .then(() => self.skipWaiting())
   );
 });
 
@@ -22,8 +21,13 @@ self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
       .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
   );
+});
+
+/* 새 판은 사람이 「바꾸기」 를 누를 때만 넘겨받는다 — 연 채로 갈아 끼우면 옛 코드 + 새 자료가 섞인다(2026-10-01 공통 규칙).
+   skipWaiting · clients.claim 을 install · activate 에 넣지 않는다 */
+self.addEventListener('message', e => {
+  if (e.data && e.data.skip) self.skipWaiting();
 });
 
 self.addEventListener('fetch', e => {
