@@ -87,9 +87,10 @@
     alt.style.display = 'block'; alt.textContent = T('웹으로 먼저 써 보기', 'Try it on the web first'); alt.href = web;
     if (!stay) setTimeout(function () { location.href = play; }, 1500);
   } else if (iphone) {
-    /* 아이폰은 자동으로 넘기지 않는다: 안내를 읽을 시간이 필요하다 */
-    msg.textContent = T('아이폰이에요. 웹으로 열고 홈 화면에 추가하면 앱처럼 써요.', 'iPhone detected. Open it on the web, then add it to your Home Screen.');
-    go.textContent = T('웹으로 열기', 'Open on the web'); go.href = web;
+    /* 아이폰은 자동으로 넘기지 않는다. 앱스토어에 공개되면 이 줄의 주소만 넣는다 */
+    msg.textContent = T('아이폰 앱스토어 출시 준비 중이에요. 웹으로 먼저 써 보고 홈 화면에 추가하면 앱처럼 써요.', 'The App Store version is coming soon. Try the web version, then add it to your Home Screen.');
+    go.textContent = T('App Store 준비 중', 'App Store coming soon'); go.removeAttribute('href'); go.style.pointerEvents = 'none'; go.style.opacity = '.6';
+    alt.style.display = 'block'; alt.textContent = T('웹으로 열기', 'Open web version'); alt.href = web;
     document.getElementById('guide').style.display = 'block';
   } else {
     msg.textContent = T('컴퓨터예요. 웹으로 열어요.', 'Computer detected. Opening the web version.');
