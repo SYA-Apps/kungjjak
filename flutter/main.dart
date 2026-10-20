@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'ad_service.dart';
+import 'banner_ad_widget.dart';
+
 // web/index.html 의 :root 변수와 같은 값을 쓴다. 한쪽만 바꾸면 색이 어긋난다.
 const kBg   = Color(0xFFF2F1F8); // --bg   앱 배경색
 const kInk  = Color(0xFF2E2B3A); // --ink  글자
@@ -17,6 +20,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  AdService.init(); // 동의(UMP) → 광고 초기화. 기다리지 않는다 — 실패해도 게임은 뜬다.
   runApp(const KungjjakApp());
 }
 
@@ -109,6 +113,11 @@ class _GameViewState extends State<GameView> with WidgetsBindingObserver {
           '쿵짝을 끝낼까요?',
           style: TextStyle(color: kInk, fontSize: 20, fontWeight: FontWeight.w700),
         ),
+        // 광고에 대해(광고 판부터): 화면 아래 배너는 구글 애드몹이 보여 주는 광고이고,.
+        content: Text(
+          '광고에 대해: 화면 아래 한 줄 광고는 구글 애드몹이 보여 줘요.',
+          style: TextStyle(color: kInk.withValues(alpha: 0.6), fontSize: 13),
+        ),
         actionsPadding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
         actions: [
           // '계속하기' 가 기본 행동이라 진하게 둔다. 실수로 끝내는 쪽이 손해가 크다.
@@ -148,7 +157,15 @@ class _GameViewState extends State<GameView> with WidgetsBindingObserver {
       },
       child: Scaffold(
         backgroundColor: kBg,
-        body: SafeArea(child: WebViewWidget(controller: _web)),
+        // 배너는 게임 화면 «아래» 따로 한 줄 — 웹뷰 안(두 사람이 누르는 판)과 겹치지 않는다.
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(child: WebViewWidget(controller: _web)),
+              const Center(child: BannerAdWidget()),
+            ],
+          ),
+        ),
       ),
     );
   }
