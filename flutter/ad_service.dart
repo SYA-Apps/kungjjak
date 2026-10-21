@@ -12,7 +12,7 @@ class AdService {
 
   static const _testBannerId = 'ca-app-pub-3940256099942544/9214589741';
   // TODO(ADMIN): 진짜 배너 단위 ID 를 받으면 여기에 넣는다. 그전에는 제출하지 않는다.
-  static const _releaseBannerId = _testBannerId;
+  static const _releaseBannerId = 'ca-app-pub-3252619410017141/9156518791';
 
   static bool get supported =>
       adsEnabled && !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
