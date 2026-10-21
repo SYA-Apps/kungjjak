@@ -788,7 +788,11 @@ const Sound = (() => {
   /* 2026-09-30 사용자 2-2 — 처음엔 무음 스위치를 따르고('ambient'),
      사람이 🔊 를 직접 켜거나 말풍선을 누르면 그때부터 무음을 넘어 들리게('playback').
      본인이 켠 것이라 듣던 음악이 멈춰도 놀라지 않는다. 음악을 끄면 다시 'ambient' */
-  let loud = false;
+  /* 2026-10-22 사용자 «아이폰은 화면을 눌러도 안 나오고 소리 버튼을 껐다 켜야 나온다» —
+     원인은 처음 시작이 'ambient'(무음 스위치를 따름)라서였다. 소리 버튼 경로만 'playback' 이라 들렸던 것.
+     그래서 아이폰은 처음부터 'playback'. 음악은 오른쪽 위 단추로 언제든 끌 수 있다 */
+  let loud = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   function setSession(){
     try { if (navigator.audioSession) navigator.audioSession.type = loud ? 'playback' : 'ambient'; } catch(e){}
   }
