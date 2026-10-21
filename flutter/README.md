@@ -476,3 +476,8 @@ R8 이 무엇을 지웠는지는 실기기에서만 드러난다.
 - [ ] **낡은 웹뷰**에서 깨지지 않는지 — 크롬이 웹뷰를 대신하고 있으면 위험이 안 드러난다.
       `adb shell cmd webviewupdate set-webview-implementation com.google.android.webview`
       로 바꿔 한 번 볼 것 (확인 뒤 `com.android.chrome` 으로 되돌린다)
+
+## 광고 판(1.0.5+8) 매니페스트 메모
+`app/android/app/src/main/AndroidManifest.xml` 은 커밋되지 않으므로 다시 만들면 이 둘을 넣을 것:
+- `<manifest>` 에 `xmlns:tools` + `<uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>` (광고 SDK 가 AD_ID 를 합쳐 넣는다 — 콘솔 광고 ID 답안 「아니요」 와 맞추려면 제거)
+- `INTERNET` 권한, 애드몹 APPLICATION_ID 메타데이터(진짜 앱 ID)
