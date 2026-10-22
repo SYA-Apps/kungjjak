@@ -434,4 +434,9 @@ adb -s <기기> install build/app/outputs/flutter-apk/app-release.apk
 
 ---
 
+## 아이폰 프로젝트 (2026-10-22)
+
+`app/ios`(번들 `com.syaapps.kungjjak`)는 맥에서 만든 것이라 `.gitignore` 에서 **`app/ios` 만** 풀어 저장소에 둔다(`/app/*` + `!/app/ios/`). Pods·build·서명 파일은 계속 제외. 나머지 `app/` 는 그대로 커밋 안 한다.
+**아이폰 쿵짝은 광고 없는 소스를 유지한다** — 맥 `app/lib` 를 `flutter/`(광고 코드·`google_mobile_ads` 포함)로 덮지 않는다. 아이폰 광고는 ADMIN·사용자 결정 뒤에 넣는다(아이폰용 AdMob 앱 ID·`Info.plist` 가 필요하다).
+
 **게임 로직을 Dart로 옮기지 말 것.** 웹과 앱이 같은 `web/index.html`을 공유해야 한다.

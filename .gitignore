@@ -22,7 +22,18 @@ key.properties
 *.log
 
 # flutter create 결과물 (래퍼는 언제든 재생성 가능)
-/app/
+# 단, 아이폰 프로젝트(app/ios)는 맥에서 손댄 번들·서명·설정이 있어 저장소에 둔다 (2026-10-22)
+/app/*
+!/app/ios/
+/app/ios/Pods/
+/app/ios/build/
+/app/ios/.symlinks/
+/app/ios/Flutter/ephemeral/
+*.xcarchive
+*.mobileprovision
+*.p12
+*.p8
+xcuserdata/
 .dart_tool/
 .packages
 
