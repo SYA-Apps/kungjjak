@@ -755,6 +755,47 @@ button.soundtip{border:none;font-family:inherit;text-align:left;cursor:pointer}
 </div>
 
 <script>
+/* 화면이 가려지면 게임 타이머·쿵봇·시계를 통째로 얼리고, 돌아오면 남은 시간부터 이어서 한다 (2026-11-19 사랑나라 세션 요청).
+   setTimeout/setInterval 은 가려져도 계속 돌아서 쿵봇이 혼자 두고 게임 타이머가 흘러갔다.
+   게임 코드는 안 고치고 타이머 함수와 performance.now 를 «멈출 수 있는 판» 으로 바꿔 끼운다. */
+(function(){
+  const st = window.setTimeout.bind(window), ct = window.clearTimeout.bind(window);
+  const pn = performance.now.bind(performance);
+  let frozen = false, frozenAt = 0, offset = 0, seq = 0;
+  const live = new Map();
+  const vnow = () => (frozen ? frozenAt : pn()) - offset;
+  function arm(id, e, delay){
+    e.due = vnow() + delay;
+    if (frozen){ e.left = delay; return; }
+    e.h = st(function(){
+      if (e.rep) arm(id, e, e.ms); else live.delete(id);
+      e.fn.apply(window, e.a);
+    }, delay);
+  }
+  function make(rep){
+    return function(fn, ms){
+      if (typeof fn !== 'function') return rep ? 0 : 0;
+      const id = ++seq, e = { fn: fn, ms: Math.max(0, +ms || 0), a: [].slice.call(arguments, 2), rep: rep, h: 0, due: 0, left: 0 };
+      live.set(id, e); arm(id, e, e.ms); return id;
+    };
+  }
+  function kill(id){ const e = live.get(id); if (!e) return; ct(e.h); live.delete(id); }
+  window.setTimeout = make(false); window.setInterval = make(true);
+  window.clearTimeout = window.clearInterval = kill;
+  performance.now = vnow;
+  window.__freeze = function(){
+    if (frozen) return;
+    const t = vnow(); frozen = true; frozenAt = pn();
+    live.forEach(function(e){ ct(e.h); e.h = 0; e.left = Math.max(0, e.due - t); });
+  };
+  window.__thaw = function(){
+    if (!frozen) return;
+    offset += pn() - frozenAt; frozen = false;
+    live.forEach(function(e, id){ arm(id, e, e.left); });
+  };
+})();
+</script>
+<script>
 'use strict';
 
 /* =========================================================
@@ -2806,8 +2847,9 @@ GAMES.land = {
      🪤 9/30 에는 오디오 장치까지 재우고(suspend) 돌아올 때 «저절로» 다시 켜려다 아이폰에서 끝내 안 나왔다(v41·v42 되돌림).
      그래서 이번엔 ① 장치는 건드리지 않고 음만 끊는다 ② 다시 켜는 건 사람이 누르는 순간(wake)에만 한다.
      앱(웹뷰)은 visibilitychange 를 안 주는 판이 있어 Flutter 껍데기가 kjPause/kjResume 을 직접 부른다(다음 판부터). */
-  const pauseMusic = () => { Music.stop(); };
+  const pauseMusic = () => { Music.stop(); window.__freeze(); };
   const armWake = () => {
+    window.__thaw();
     WAKE_EV.forEach(ev => document.addEventListener(ev, wake, true));
     if (Music.isOn() && onScreen() === 'menu') tipSay(T('👆 화면을 누르면 음악이 나와요', '👆 Tap the screen to start the music'));
   };
