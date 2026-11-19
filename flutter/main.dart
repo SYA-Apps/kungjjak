@@ -18,7 +18,13 @@ const kMint = Color(0xFF7FD1B9); // --a    쿵
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  // 폰(짧은 변 600dp 미만)만 세로로 묶는다. 폴드 펼침·태블릿은 묶지 않는다(안드로이드 16 은 어차피 무시하고,
+  // 구글 권장 조치도 큰 화면의 방향 제한 삭제). 눕힌 폰은 웹의 #rotate 안내판이 맡는다.
+  final v = WidgetsBinding.instance.platformDispatcher.views.first;
+  final shortest = v.physicalSize.shortestSide / v.devicePixelRatio;
+  if (shortest < 600) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   AdService.init(); // 동의(UMP) → 광고 초기화. 기다리지 않는다 — 실패해도 게임은 뜬다.
   runApp(const KungjjakApp());

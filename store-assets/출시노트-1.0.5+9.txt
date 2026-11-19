@@ -1,0 +1,9 @@
+[ko-KR]
+- 접는 폰, 듀오, 태블릿 같은 큰 화면에서 더 넓게 보여요. 큰 화면은 가로로 돌려도 돼요.
+- 첫 화면이 큰 화면에서는 두 칸으로 보이고, 게임마다 각자 화면인지 공용 판인지 알약으로 알려 줘요.
+- 쿵봇 한 줄 소개와 공용 판 첫 판 안내를 더했어요.
+
+[en-US]
+- Wider layout on large screens such as foldables, dual-screen phones and tablets, and rotation is now allowed there.
+- The home screen shows two columns on large screens, and each game is tagged as own screen or shared board.
+- Added a one-line intro for Robo Tap and a first-round tip for shared-board games.

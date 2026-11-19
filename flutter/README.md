@@ -217,15 +217,11 @@ app/android/app/src/main/res/values-en/strings.xml   <string name="app_name">Tap
 
 ⚠️ `app/` 은 커밋되지 않으니 `flutter create` 로 다시 만들면 이 두 파일과 매니페스트를 다시 넣어야 한다.
 
-### 세로 고정 (2026-09-29 사용자 «쿵짝은 세로모드만»)
-`main.dart` 의 `setPreferredOrientations` 는 **Flutter 가 뜬 뒤에야** 먹는다. 매니페스트에도 박아
-처음 뜨는 순간부터 세로로 둔다. 같은 파일 `<activity` 안에:
-
-```xml
-android:screenOrientation="portrait"
-```
-
-⚠️ 안드로이드 16 부터 **태블릿·폴더블 펼친 화면(짧은 변 600dp 이상)** 에서는 이 고정을 시스템이 무시한다.
+### 세로 고정 (2026-09-29 → 2026-11-19 폰에만 걸도록 바꿈)
+큰 화면(폴드 펼침·듀오·태블릿)은 방향을 묶지 않는다(콘솔 「큰 화면 권장 조치」 대응).
+`main.dart` 가 짧은 변 600dp 미만일 때만 `setPreferredOrientations(portraitUp)` 를 건다.
+**매니페스트의 `android:screenOrientation="portrait"` 는 넣지 않는다**(있으면 큰 화면 권장 조치가 남는다).
+에뮬레이터 실측(11/19): 폰은 눕혀도 세로 유지, 태블릿은 가로·세로 모두 게임이 막히지 않고 광고도 안 가린다.
 폰에서는 그대로 먹는다. 웹은 방향을 못 묶어서 `index.html` 의 `#rotate` 안내판이 대신 맡는다.
 
 ### 화면 꺼짐 방지 (중요)
