@@ -1,6 +1,6 @@
 /* 쿵짝 서비스워커 — 오프라인 지원.
    게임 파일을 바꾸면 CACHE 버전을 올려야 새 파일이 적용된다. */
-const CACHE = 'kungjjak-v67';  /* 화면 방식 알약 · 쿵봇 한 줄 소개 · 공용 판 첫 안내 */
+const CACHE = 'kungjjak-v68';  /* 화면이 가려지면 게임 타이머·쿵봇 멈춤, 돌아오면 이어서 */
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',
