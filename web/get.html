@@ -4,6 +4,7 @@
     https://sya-apps.github.io/kungjjak/get.html
   안드로이드: 1.5초 뒤 Google Play 로 자동 이동(+ 단추 둘)  /  아이폰·아이패드: 자동 이동 없음, 안내 그림을 읽을 시간
   PC: 1.5초 뒤 웹으로  /  주소 뒤 ?stay 를 붙이면 자동 이동을 끈다(시험용)
+  주소 뒤 ?from=threads 를 붙이면 스토어 주소에 쓰레드 유입 표시가 붙는다(안드로이드 referrer · 아이폰 ct). 11/26 SNS 요청
   카톡 미리보기는 아래 og 태그를 쓴다(Play 주소는 카톡이 미리보기를 못 만들어서 이 페이지가 대신한다).
   본보기: 학원시간표 get.html · 디자인은 이 앱 것(연보라 바탕 · 쿵 민트 · 짝 코랄).
   🔒 사용자에게 보이는 글에는 「」만 쓰고 « » · 가운뎃점 · 긴 줄표는 쓰지 않는다. 기기에 아무것도 저장하지 않는다.
@@ -71,6 +72,9 @@
   var iphone = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
   var stay = /[?&]stay/.test(location.search);
   var play = 'https://play.google.com/store/apps/details?id=com.syaapps.kungjjak';
+  /* 쓰레드 글 링크(?from=threads)로 온 설치를 세려는 표시. 안드로이드는 Play 설치 출처, 아이폰은 App Store 캠페인. 다른 값은 지금처럼 */
+  var threads = /[?&]from=threads(&|$)/.test(location.search);
+  if (threads) play += '&referrer=utm_source%3Dthreads';
   var web = 'https://sya-apps.github.io/kungjjak/';
   var go = document.getElementById('go'), alt = document.getElementById('alt'), msg = document.getElementById('msg');
   if (en) {
@@ -89,7 +93,7 @@
   } else if (iphone) {
     /* 아이폰은 자동으로 넘기지 않는다. 앱스토어에 공개되면 이 줄의 주소만 넣는다 */
     msg.textContent = T('아이폰이에요. App Store에서 앱을 받아요.', 'iPhone detected. Get the app on the App Store.');
-    go.textContent = T('App Store에서 앱 받기', 'Get it on the App Store'); go.href = 'https://apps.apple.com/kr/app/id6823667541';
+    go.textContent = T('App Store에서 앱 받기', 'Get it on the App Store'); go.href = 'https://apps.apple.com/kr/app/id6823667541' + (threads ? '?ct=threads' : '');
     alt.style.display = 'block'; alt.textContent = T('웹으로 열기', 'Open web version'); alt.href = web;
   } else {
     msg.textContent = T('컴퓨터예요. 웹으로 열어요.', 'Computer detected. Opening the web version.');
